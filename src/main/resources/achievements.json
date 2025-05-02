@@ -1,0 +1,237 @@
+[
+  {
+    "name": "Starter Badge",
+    "xpRequired": 50,
+    "description": "Your journey begins here!"
+  },
+  {
+    "name": "Beginner",
+    "xpRequired": 100,
+    "description": "You are getting the hang of it!"
+  },
+  {
+    "name": "Novice",
+    "xpRequired": 200,
+    "description": "Slowly but surely, you progress."
+  },
+  {
+    "name": "Intermediate",
+    "xpRequired": 500,
+    "description": "You are leveling up your skills."
+  },
+  {
+    "name": "Task Master",
+    "xpRequired": 1000,
+    "description": "Master of all tasks, big and small."
+  },
+  {
+    "name": "Daily Grinder",
+    "xpRequired": 1500,
+    "description": "You never skip a day!"
+  },
+  {
+    "name": "Multitasker",
+    "xpRequired": 2000,
+    "description": "Juggling multiple tasks like a pro."
+  },
+  {
+    "name": "Efficiency Guru",
+    "xpRequired": 3000,
+    "description": "You maximize productivity every day."
+  },
+  {
+    "name": "Procrastination Slayer",
+    "xpRequired": 4000,
+    "description": "Goodbye, procrastination! Hello, productivity!"
+  },
+  {
+    "name": "Overachiever",
+    "xpRequired": 5000,
+    "description": "You always go the extra mile."
+  },
+  {
+    "name": "Task Conqueror",
+    "xpRequired": 6000,
+    "description": "Nothing can stop you now."
+  },
+  {
+    "name": "Ultimate Finisher",
+    "xpRequired": 7500,
+    "description": "You see everything through to the end."
+  },
+  {
+    "name": "Legendary Worker",
+    "xpRequired": 9000,
+    "description": "Your work ethic is legendary!"
+  },
+  {
+    "name": "The Unstoppable",
+    "xpRequired": 10000,
+    "description": "You are an unstoppable force of productivity."
+  },
+  {
+    "name": "Master of Time",
+    "xpRequired": 12000,
+    "description": "You manage your time like a pro."
+  },
+  {
+    "name": "Deadline Dominator",
+    "xpRequired": 14000,
+    "description": "Deadlines fear you!"
+  },
+  {
+    "name": "XP Hoarder",
+    "xpRequired": 16000,
+    "description": "You just keep collecting XP!"
+  },
+  {
+    "name": "Checklist Enthusiast",
+    "xpRequired": 18000,
+    "description": "You love checking off tasks!"
+  },
+  {
+    "name": "Champion of Chores",
+    "xpRequired": 20000,
+    "description": "No chore is too tough for you."
+  },
+  {
+    "name": "Zen Master",
+    "xpRequired": 25000,
+    "description": "You approach tasks with a calm mind."
+  },
+  {
+    "name": "No More To-Do!",
+    "xpRequired": 30000,
+    "description": "You finished your entire to-do list!"
+  },
+  {
+    "name": "Efficiency Overload",
+    "xpRequired": 35000,
+    "description": "You are an efficiency machine."
+  },
+  {
+    "name": "Task Terminator",
+    "xpRequired": 40000,
+    "description": "You terminate tasks like a pro."
+  },
+  {
+    "name": "Checklist Maniac",
+    "xpRequired": 45000,
+    "description": "Your checklist is your best friend."
+  },
+  {
+    "name": "The Grand Organizer",
+    "xpRequired": 50000,
+    "description": "Everything in its place, always."
+  },
+  {
+    "name": "King of Productivity",
+    "xpRequired": 60000,
+    "description": "You reign over productivity."
+  },
+  {
+    "name": "100 Tasks Done!",
+    "xpRequired": 70000,
+    "description": "100 tasks completed! Impressive!"
+  },
+  {
+    "name": "200 Tasks Done!",
+    "xpRequired": 80000,
+    "description": "200 tasks? You are on fire!"
+  },
+  {
+    "name": "500 Tasks Done!",
+    "xpRequired": 90000,
+    "description": "500 tasks and counting!"
+  },
+  {
+    "name": "Task Tycoon",
+    "xpRequired": 100000,
+    "description": "You dominate the task economy!"
+  },
+  {
+    "name": "One More Task",
+    "xpRequired": 110000,
+    "description": "Just one more... and another..."
+  },
+  {
+    "name": "You Got This!",
+    "xpRequired": 120000,
+    "description": "Confidence and consistency win!"
+  },
+  {
+    "name": "Never Give Up",
+    "xpRequired": 130000,
+    "description": "You never back down from a challenge."
+  },
+  {
+    "name": "Done and Dusted",
+    "xpRequired": 140000,
+    "description": "All tasks completed with style."
+  },
+  {
+    "name": "Master Planner",
+    "xpRequired": 150000,
+    "description": "Planning is your superpower."
+  },
+  {
+    "name": "The Legend of Tasks",
+    "xpRequired": 175000,
+    "description": "You are a true task legend."
+  },
+  {
+    "name": "The XP Millionaire",
+    "xpRequired": 200000,
+    "description": "Rolling in XP!"
+  },
+  {
+    "name": "Achievement Hunter",
+    "xpRequired": 250000,
+    "description": "Collecting achievements like a pro!"
+  },
+  {
+    "name": "The Grand Master",
+    "xpRequired": 300000,
+    "description": "You are truly exceptional."
+  },
+  {
+    "name": "Lord of Completion",
+    "xpRequired": 350000,
+    "description": "Nothing remains undone."
+  },
+  {
+    "name": "To-Do List Deity",
+    "xpRequired": 400000,
+    "description": "You have mastered the art of lists."
+  },
+  {
+    "name": "Unstoppable Machine",
+    "xpRequired": 450000,
+    "description": "You just keep going!"
+  },
+  {
+    "name": "Task Lord",
+    "xpRequired": 500000,
+    "description": "All tasks bow before you."
+  },
+  {
+    "name": "The Impossible Achiever",
+    "xpRequired": 600000,
+    "description": "Even the hardest tasks fall before you."
+  },
+  {
+    "name": "Legendary Doer",
+    "xpRequired": 700000,
+    "description": "You are a legend in the making."
+  },
+  {
+    "name": "Task Deity",
+    "xpRequired": 800000,
+    "description": "You have transcended task management."
+  },
+  {
+    "name": "The Final Task",
+    "xpRequired": 1000000,
+    "description": "The ultimate achievement is yours!"
+  }
+]
