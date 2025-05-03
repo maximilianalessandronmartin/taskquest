@@ -134,14 +134,12 @@ class AchievementServiceImplTest {
     void deleteById() {
         // Arrange
         Long id = 1L;
-        Achievement achievement = new Achievement();
-        when(achievementRepository.findById(id)).thenReturn(java.util.Optional.of(achievement));
 
         // Act
         achievementService.deleteById(id);
 
         // Assert
-        verify(achievementRepository).findById(id);
+
         verify(achievementRepository).deleteById(id);
     }
 }

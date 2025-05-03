@@ -83,6 +83,24 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    /**
+     * Handles InvalidRequestException and returns a 400 Bad Request response.
+     *
+     * @param ex The exception that was thrown.
+     * @return An ErrorMessage object containing error details.
+     */
+    @ExceptionHandler(InvalidRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorMessage handleInvalidRequestException(InvalidRequestException ex) {
+        return ErrorMessage
+                .builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(new Date())
+                .message(ex.getMessage())
+                .description(ex.getLocalizedMessage())
+                .build();
+    }
+
 
     /**
      * Handles MethodArgumentNotValidException and returns a 400 Bad Request response.

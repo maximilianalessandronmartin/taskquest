@@ -1,10 +1,13 @@
 package org.novize.api.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.novize.api.dtos.TaskDto;
 import org.novize.api.enums.Urgency;
+import org.novize.api.exceptions.InvalidRequestException;
+import org.novize.api.exceptions.UserNotFoundException;
 import org.novize.api.model.Task;
 import org.novize.api.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +83,19 @@ public class TaskControllerTest {
     public void markAsComplete_WhenTaskDoesNotExist_ShouldReturnNotFound() throws Exception {
         String taskId = "nonexistent";
 
-        Mockito.when(taskService.setCompleted(taskId)).thenThrow(new RuntimeException("Task not found"));
+        Mockito.when(taskService.setCompleted(taskId)).thenThrow(new EntityNotFoundException("Task not found"));
+
+        mockMvc.perform(post("/api/tasks/complete/{id}", taskId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = {"USER"})
+    public void markAsComplete_WhenUserDoesNotExist_ShouldReturnNotFound() throws Exception {
+        String taskId = "nonexistent";
+
+        Mockito.when(taskService.setCompleted(taskId)).thenThrow(new UserNotFoundException("Task not found"));
 
         mockMvc.perform(post("/api/tasks/complete/{id}", taskId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -91,7 +106,7 @@ public class TaskControllerTest {
     @WithMockUser(username = "testuser", roles = {"USER"})
     public void markAsComplete_WhenTaskIdIsInvalid_ShouldReturnBadRequest() throws Exception {
         String invalidTaskId = "   ";
-        Mockito.when(taskService.setCompleted(invalidTaskId)).thenThrow(new RuntimeException("Task not found"));
+        Mockito.when(taskService.setCompleted(invalidTaskId)).thenThrow(new InvalidRequestException("Task not found"));
 
         mockMvc.perform(post("/api/tasks/complete/{id}", invalidTaskId)
                         .contentType(MediaType.APPLICATION_JSON))

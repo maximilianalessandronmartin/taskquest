@@ -15,11 +15,9 @@ import org.novize.api.model.Role;
 import org.novize.api.model.User;
 import org.novize.api.repository.RoleRepository;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -134,7 +132,7 @@ public class AuthenticationServiceTest {
 
         // Erstellen Sie ein UserDetails-Objekt (wahrscheinlich CustomUserDetails)
         // Option 1: UserDetails als Principal
-        when(userService.findUserByEmail(loginUserDto.getEmail())).thenReturn(expectedUser);
+        when(userService.findUserByUsername(loginUserDto.getEmail())).thenReturn(expectedUser);
 
         // Option 2: Direkter User als Principal
         Authentication authentication = mock(Authentication.class);
@@ -163,9 +161,7 @@ public class AuthenticationServiceTest {
                 .thenThrow(expectedException);
 
         // Act & Assert
-        assertThrows(AuthenticationException.class, () -> {
-            authenticationService.authenticate(loginUserDto);
-        });
+        assertThrows(AuthenticationException.class, () -> authenticationService.authenticate(loginUserDto));
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         // Stelle sicher, dass findUserByEmail nicht aufgerufen wird
