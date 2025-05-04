@@ -7,10 +7,13 @@ import jakarta.validation.constraints.Null;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.novize.api.enums.TaskVisibility;
 import org.novize.api.enums.Urgency;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Table(name = "tasks")
 @Entity
@@ -33,11 +36,11 @@ public class Task {
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
     // Default value is Urgency.LOW
 
@@ -52,6 +55,18 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToMany
+    @JoinTable(
+            name = "task_shared_users",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> sharedWith = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    private TaskVisibility visibility = TaskVisibility.PRIVATE;
+
 
 
     @Builder

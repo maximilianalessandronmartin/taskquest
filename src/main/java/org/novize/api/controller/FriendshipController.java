@@ -5,6 +5,7 @@ import org.novize.api.model.User;
 import org.novize.api.services.FriendshipServiceImpl;
 import org.novize.api.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +45,7 @@ public class FriendshipController {
     }
 
     @PostMapping("/accept")
+    @PreAuthorize("isAuthenticated()")
     @Transactional
     public void acceptFriendRequest(@RequestParam String friendshipId) {
         // Logik, um die Anfrage anzunehmen

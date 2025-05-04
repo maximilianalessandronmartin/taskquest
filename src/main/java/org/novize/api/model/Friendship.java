@@ -1,18 +1,19 @@
 package org.novize.api.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.novize.api.enums.FriendshipStatus;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Table(name = "friendships")
 @Entity
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@Builder
 public class Friendship {
 
     @Id
@@ -29,12 +30,15 @@ public class Friendship {
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "status")
-    private FriendshipStatus status = FriendshipStatus.PENDING; // Status der Freundschaftsanfrage
+    private FriendshipStatus status;
 
+    public Friendship() {
+
+    }
 }

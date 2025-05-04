@@ -12,6 +12,7 @@ import org.novize.api.repository.AchievementRepository;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+
 class AchievementServiceImplTest {
 
     @Mock

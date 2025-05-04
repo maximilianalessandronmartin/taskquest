@@ -4,8 +4,7 @@ package org.novize.api.dtos;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import org.novize.api.dtos.task.TaskDto;
 
 
 import java.util.List;

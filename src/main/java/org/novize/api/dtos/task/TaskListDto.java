@@ -1,10 +1,7 @@
-package org.novize.api.dtos;
+package org.novize.api.dtos.task;
 
-import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 

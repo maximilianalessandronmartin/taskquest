@@ -53,4 +53,15 @@ public interface FriendshipService {
      * @return the {@link Friendship} object corresponding to the given ID
      */
     Friendship getFriendshipById(String friendshipId);
+
+    /**
+     * Checks if the given user is a friend of the current user.
+     *
+     * @param currentUser the user initiating the friend status check
+     * @param friend the user whose friendship status is being checked
+     * @return true if the users are friends, false otherwise
+     */
+    boolean areNotFriends(User currentUser, User friend);
+
+
 }

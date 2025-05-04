@@ -3,16 +3,19 @@ package org.novize.api.controller;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.novize.api.dtos.CreateTaskDto;
-import org.novize.api.dtos.TaskDto;
-import org.novize.api.dtos.TaskListDto;
-import org.novize.api.dtos.UpdateTaskDto;
+import org.novize.api.dtos.task.*;
+import org.novize.api.mapper.TaskMapper;
 import org.novize.api.model.Task;
+import org.novize.api.model.User;
 import org.novize.api.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Controller for managing task operations.
@@ -27,10 +30,13 @@ public class TaskController {
     @Autowired
     TaskService taskService;
 
+    @Autowired
+    private TaskMapper taskMapper;
+
     @GetMapping("{id}")
     public TaskDto getById(@PathVariable String id) {
 
-        return taskService.getTaskDtoById(id);
+        return taskService.getById(id);
     }
 
 
@@ -76,6 +82,37 @@ public class TaskController {
                 .build();
     }
 
+
+    @PostMapping("/{id}/share")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TaskDto> shareTask(
+            @PathVariable String id,
+            @RequestBody ShareTaskDto shareTaskDto,
+            @AuthenticationPrincipal User currentUser) {
+        Task task = taskService.shareTaskwithFriend(id, shareTaskDto.getUsername(), currentUser);
+        return ResponseEntity.ok(taskMapper.toDto(task, currentUser));
+    }
+
+    @DeleteMapping("/{id}/share/{username}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TaskDto> unshareTask(
+            @PathVariable String id,
+            @PathVariable String username,
+            @AuthenticationPrincipal User currentUser) {
+        Task task = taskService.unshareTask(id, username, currentUser);
+        return ResponseEntity.ok(taskMapper.toDto(task, currentUser));
+    }
+
+    @GetMapping("/shared")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<TaskDto>> getSharedTasks(
+            @AuthenticationPrincipal User currentUser) {
+        List<Task> tasks = taskService.getSharedWithMeTasks(currentUser);
+        List<TaskDto> taskDtos = tasks.stream()
+                .map(task -> taskMapper.toDto(task, currentUser))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(taskDtos);
+    }
 
 
 

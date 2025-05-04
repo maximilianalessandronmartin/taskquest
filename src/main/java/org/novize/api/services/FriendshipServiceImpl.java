@@ -1,6 +1,8 @@
 package org.novize.api.services;
 
 import org.novize.api.enums.FriendshipStatus;
+import org.novize.api.exceptions.FriendshipNotFoundException;
+import org.novize.api.exceptions.InvalidRequestException;
 import org.novize.api.model.Friendship;
 import org.novize.api.model.User;
 import org.novize.api.repository.FriendshipRepository;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementation of the FriendshipService interface to manage friendships between users.
@@ -52,12 +55,21 @@ public class FriendshipServiceImpl implements FriendshipService {
     public void sendFriendRequest(User sender, User receiver) {
         // Check if the sender and receiver are the same
         if (sender.getId().equals(receiver.getId())) {
-            throw new IllegalArgumentException("You cannot send a friend request to yourself.");
+            throw new InvalidRequestException("You cannot send a friend request to yourself.");
         }
-        Friendship friendship = new Friendship();
-        friendship.setUser(sender);
-        friendship.setFriend(receiver);
-        friendship.setStatus(FriendshipStatus.PENDING);
+        // Prüfen, ob bereits eine Anfrage existiert
+        Optional<Friendship> existingFriendship = friendshipRepository.findByUserAndFriend(sender, receiver);
+        if (existingFriendship.isPresent()) {
+            throw new InvalidRequestException("Friend request already exists.");
+        }
+
+        Friendship friendship = Friendship
+                .builder()
+                .user(sender)
+                .friend(receiver)
+                .status(FriendshipStatus.PENDING)
+                .build();
+
         friendshipRepository.save(friendship);
     }
 
@@ -92,15 +104,36 @@ public class FriendshipServiceImpl implements FriendshipService {
     }
 
     /**
-     * Retrieves a {@link Friendship} object based on the provided friendship ID.
+     * Retrieves a {@link Friendship} entity by its unique identifier.
+     * If the friendship ID is null, empty, or does not correspond to an existing friendship,
+     * a {@link FriendshipNotFoundException} is thrown.
      *
      * @param friendshipId the unique identifier of the friendship to retrieve
-     * @return the {@link Friendship} object corresponding to the given ID
+     * @return the {@link Friendship} entity associated with the provided ID
+     * @throws FriendshipNotFoundException if no friendship is found with the specified ID
      */
     public Friendship getFriendshipById(String friendshipId) {
-        return friendshipRepository.getReferenceById(friendshipId);
+        // Check if the friendship ID is null or empty
+        if (friendshipId == null || friendshipId.isEmpty()) {
+            throw new IllegalArgumentException("Invalid friendship ID");
+        }
+        // Retrieve the friendship by ID
+        return friendshipRepository.findById(friendshipId)
+                .orElseThrow(() -> new FriendshipNotFoundException("Friendship was not found"));
     }
 
+    /**
+     * Checks if two users are friends by verifying if a friendship relation exists
+     * between the current user and the given friend with the status set to ACCEPTED.
+     *
+     * @param currentUser the user initiating the friendship check
+     * @param friend the user whose friendship status with the current user is being checked
+     * @return true if the users are friends (friendship exists with status ACCEPTED), false otherwise
+     */
+    @Override
+    public boolean areNotFriends(User currentUser, User friend) {
+        return !friendshipRepository.existsByUserAndFriendAndStatus(currentUser, friend, FriendshipStatus.ACCEPTED);
+    }
 
 
 }

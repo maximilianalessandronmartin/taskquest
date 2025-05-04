@@ -1,4 +1,4 @@
-package org.novize.api.dtos;
+package org.novize.api.dtos.task;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -8,13 +8,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
+import org.novize.api.dtos.UserDto;
+import org.novize.api.enums.TaskVisibility;
 import org.novize.api.enums.Urgency;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.List;
 
 
 @Data
@@ -23,9 +22,9 @@ public class TaskDto {
     @Null
     private String id;
     @NotNull
-    private Date createdAt;
+    private LocalDateTime createdAt;
     @NotNull
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
     @NotBlank
     @Max(value = 50, message = "Name must be less than 50 characters")
     private String name;
@@ -39,6 +38,11 @@ public class TaskDto {
     private Urgency urgency;
     @NotNull
     private Boolean completed;
+
+    private TaskVisibility visibility;
+    private List<UserDto> sharedWith;
+    private boolean isOwner;
+
 
 
 

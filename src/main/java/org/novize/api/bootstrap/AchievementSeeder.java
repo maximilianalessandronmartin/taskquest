@@ -11,9 +11,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
+import java.io.*;
 
 import java.util.List;
 
@@ -38,31 +36,37 @@ public class AchievementSeeder implements ApplicationListener<ContextRefreshedEv
     }
 
     private void loadAchievements() {
-        // Read the json file and convert to a List of achievements
         try {
-            Reader reader = new FileReader("src/main/resources/achievements.json");
+            // Ressource aus dem Klassenpfad laden, nicht von der Festplatte
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("achievements.json");
 
-            // Convert the json file to a list of achievements
+            if (inputStream == null) {
+                logger.error("Konnte achievements.json nicht finden");
+                throw new RuntimeException("achievements.json nicht gefunden");
+            }
+
+            // Reader aus dem InputStream erstellen
+            Reader reader = new InputStreamReader(inputStream);
+
+            // JSON in Objekte konvertieren
             List<Achievement> achievements = new Gson().fromJson(reader, new TypeToken<List<Achievement>>() {
             }.getType());
 
             for (Achievement achievement : achievements) {
-                // Check if the achievement already exists in the database
+                // Überprüfung ob Achievement existiert
                 if (achievementRepository.findByNameIgnoreCase(achievement.getName()) == null) {
-                    // Save the achievement to the database
                     achievementRepository.save(achievement);
-                    logger.info("Achievement " + achievement.getName() + " saved to the database");
+                    logger.info("Achievement {} zur Datenbank hinzugefügt", achievement.getName());
                 } else {
-                    logger.info("Achievement " + achievement.getName() + " already exists in the database");
+                    logger.info("Achievement {} existiert bereits in der Datenbank", achievement.getName());
                 }
             }
 
-
-
-        } catch (FileNotFoundException e) {
+            // Stream schließen
+            inputStream.close();
+        } catch (IOException e) {
+            logger.error("Fehler beim Laden der Achievements: {}", e.getMessage());
             throw new RuntimeException(e);
         }
-
     }
-
 }

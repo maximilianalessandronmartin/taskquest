@@ -1,7 +1,10 @@
 package org.novize.api.services;
 
 
-import org.novize.api.dtos.*;
+import org.novize.api.dtos.task.CreateTaskDto;
+import org.novize.api.dtos.task.TaskDto;
+import org.novize.api.dtos.task.TaskListDto;
+import org.novize.api.dtos.task.UpdateTaskDto;
 import org.novize.api.model.Task;
 import org.novize.api.model.User;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,8 @@ import java.util.List;
 @Service
 public interface TaskService {
 
+   Task findById(String id);
+
    TaskDto create(CreateTaskDto taskDto);
 
    Task setCompleted(String id);
@@ -23,7 +28,7 @@ public interface TaskService {
    TaskDto update(String id, UpdateTaskDto taskDto);
 
 
-   TaskDto getTaskDtoById(String id);
+   TaskDto getById(String id);
 
    TaskListDto search(String name, int page, int pageSize);
 
@@ -33,9 +38,11 @@ public interface TaskService {
 
    List<TaskDto> findAllByUserId();
 
+   Task shareTaskwithFriend(String taskId, String friendId, User currentUser);
+
+   Task unshareTask(String id, String username, User currentUser);
+
    boolean existsById(String id);
 
-   SyncRequestDto getData(User user);
-
-   SyncRequestDto syncData(User user, SyncRequestDto syncRequestDto);
+   List<Task> getSharedWithMeTasks(User currentUser);
 }
