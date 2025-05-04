@@ -10,6 +10,7 @@ import org.novize.api.dtos.task.UpdateTaskDto;
 import org.novize.api.enums.TaskVisibility;
 import org.novize.api.exceptions.InvalidRequestException;
 import org.novize.api.exceptions.UserNotFoundException;
+import org.novize.api.mapper.TaskMapper;
 import org.novize.api.model.Task;
 import org.novize.api.model.User;
 import org.novize.api.repository.TaskRepository;
@@ -24,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -42,7 +44,10 @@ public class TaskServiceImpl implements TaskService {
     TaskRepository taskRepository;
 
     @Autowired
-    UserRepository userrepository;
+    UserRepository userRepository;
+
+    @Autowired
+    TaskMapper taskMapper;
 
     @Autowired
     FriendshipService friendshipService;
@@ -122,7 +127,7 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
-    public Task setCompleted(String id) {
+    public Task toggleCompleted(String id) {
         Optional<Task> optionalTask = taskRepository.findById(id);
         User user = getUser();
         if (optionalTask.isEmpty()) {
@@ -136,7 +141,10 @@ public class TaskServiceImpl implements TaskService {
         // Nur XP vergeben, wenn die Aufgabe von nicht abgeschlossen zu abgeschlossen wechselt
         if (!task.getCompleted()) {
             user.setXp(user.getXp() + 10);
-            userrepository.save(user);
+            userRepository.save(user);
+        } else {
+            user.setXp(user.getXp() - 10);
+            userRepository.save(user);
         }
 
         task.setCompleted(!task.getCompleted());
@@ -204,26 +212,15 @@ public class TaskServiceImpl implements TaskService {
      * @throws RuntimeException if the currently authenticated user is not found
      */
     @Override
+    @Transactional
     public List<TaskDto> findAllByUserId() {
 
         User user = getUser();
         if (user == null) throw new RuntimeException("User not found");
+        Sort sort = Sort.by("createdAt").ascending();
+        List<Task> tasks = taskRepository.findByUserId(user.getId(), sort);
+        return tasks.stream().map(task -> taskMapper.toDto(task, user)).collect(Collectors.toList());
 
-        var tasks = taskRepository.findByUserId(user.getId(), Sort.by("createdAt").ascending());
-        return tasks.stream().map(task -> {
-            TaskDto dto = TaskDto.builder()
-                    .id(task.getId())
-                    .name(task.getName())
-                    .description(task.getDescription())
-                    .dueDate(task.getDueDate())
-                    .urgency(task.getUrgency())
-                    .completed(task.getCompleted())
-                    .createdAt(task.getCreatedAt())
-                    .updatedAt(task.getUpdatedAt())
-                    .build();
-
-            return dto;
-        }).collect(Collectors.toList());
 
     }
 
@@ -244,6 +241,7 @@ public class TaskServiceImpl implements TaskService {
      * @throws InvalidRequestException if the specified friend is not in the current user's friend list
      */
     @Override
+
     public Task shareTaskwithFriend(String taskId, String friendId, User currentUser) {
         Task task = findById(taskId);
         if (task == null) {
@@ -294,6 +292,7 @@ public class TaskServiceImpl implements TaskService {
      * @throws RuntimeException if no task is found with the provided ID
      */
     @Override
+    @Transactional
     public TaskDto getById(String id) {
 
         Optional<Task> optional = taskRepository.findById(id);
@@ -301,15 +300,7 @@ public class TaskServiceImpl implements TaskService {
         if (task == null) {
             throw new EntityNotFoundException("Task not found");
         }
-        return TaskDto.builder()
-                .id(task.getId())
-                .name(task.getName())
-                .description(task.getDescription())
-                .dueDate(task.getDueDate())
-                .urgency(task.getUrgency())
-                .createdAt(task.getCreatedAt())
-                .updatedAt(task.getUpdatedAt())
-                .build();
+        return taskMapper.toDto(task, getUser());
     }
 
 
@@ -324,7 +315,7 @@ public class TaskServiceImpl implements TaskService {
      * along with pagination information such as the total number of pages and count of tasks.
      */
     @Override
-    public TaskListDto search(String query, int page, int pageSize) {
+    public TaskListDto search(String query, int page, int pageSize, User user) {
 
         Page<Task> tasks;
         final Pageable request = PageRequest.of(page - 1, pageSize, Sort.by("createdAt"));
@@ -339,18 +330,11 @@ public class TaskServiceImpl implements TaskService {
         }
 
         // Map tasks to TaskDto
-        List<TaskDto> taskDtos = tasks.stream().map(task -> {
-            TaskDto dto = TaskDto.builder()
-                    .id(task.getId())
-                    .name(task.getName())
-                    .description(task.getDescription())
-                    .dueDate(task.getDueDate())
-                    .urgency(task.getUrgency())
-                    .createdAt(task.getCreatedAt())
-                    .updatedAt(task.getUpdatedAt())
-                    .build();
-            return dto;
-        }).collect(Collectors.toList());
+
+        var taskDtos =  tasks.stream()
+                .map(task -> taskMapper.toDto(task, user))
+                .collect(Collectors.toList());
+
 
         return TaskListDto.builder()
                 .tasks(taskDtos)

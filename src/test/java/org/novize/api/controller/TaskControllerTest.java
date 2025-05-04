@@ -64,7 +64,7 @@ public class TaskControllerTest {
         String formattedDueDate = taskDto.getDueDate().format(formatter);
 
 
-        Mockito.when(taskService.setCompleted(taskId)).thenReturn(task);
+        Mockito.when(taskService.toggleCompleted(taskId)).thenReturn(task);
 
         mockMvc.perform(post("/api/tasks/complete/{id}", taskId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -82,7 +82,7 @@ public class TaskControllerTest {
     public void markAsComplete_WhenTaskDoesNotExist_ShouldReturnNotFound() throws Exception {
         String taskId = "nonexistent";
 
-        Mockito.when(taskService.setCompleted(taskId)).thenThrow(new EntityNotFoundException("Task not found"));
+        Mockito.when(taskService.toggleCompleted(taskId)).thenThrow(new EntityNotFoundException("Task not found"));
 
         mockMvc.perform(post("/api/tasks/complete/{id}", taskId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -94,7 +94,7 @@ public class TaskControllerTest {
     public void markAsComplete_WhenUserDoesNotExist_ShouldReturnNotFound() throws Exception {
         String taskId = "nonexistent";
 
-        Mockito.when(taskService.setCompleted(taskId)).thenThrow(new UserNotFoundException("Task not found"));
+        Mockito.when(taskService.toggleCompleted(taskId)).thenThrow(new UserNotFoundException("Task not found"));
 
         mockMvc.perform(post("/api/tasks/complete/{id}", taskId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -105,7 +105,7 @@ public class TaskControllerTest {
     @WithMockUser(username = "testuser", roles = {"USER"})
     public void markAsComplete_WhenTaskIdIsInvalid_ShouldReturnBadRequest() throws Exception {
         String invalidTaskId = "   ";
-        Mockito.when(taskService.setCompleted(invalidTaskId)).thenThrow(new InvalidRequestException("Task not found"));
+        Mockito.when(taskService.toggleCompleted(invalidTaskId)).thenThrow(new InvalidRequestException("Task not found"));
 
         mockMvc.perform(post("/api/tasks/complete/{id}", invalidTaskId)
                         .contentType(MediaType.APPLICATION_JSON))

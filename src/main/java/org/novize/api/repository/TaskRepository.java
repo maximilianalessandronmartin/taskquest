@@ -23,7 +23,7 @@ public interface TaskRepository extends PagingAndSortingRepository<Task, String>
     Optional<Task> findByName(String name);
 
 
-    List<TaskDto> findByUserId(String id, Sort sort);
+    List<Task> findByUserId(String id, Sort sort);
 
     List<Task> findAllByUserId(String id);
 

@@ -6,8 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import org.novize.api.dtos.UserDto;
 import org.novize.api.enums.TaskVisibility;
 import org.novize.api.enums.Urgency;
@@ -17,6 +16,8 @@ import java.util.List;
 
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class TaskDto {
     @Null

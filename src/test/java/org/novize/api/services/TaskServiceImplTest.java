@@ -245,7 +245,7 @@ public class TaskServiceImplTest {
 
         EntityNotFoundException exception = assertThrows(
                 EntityNotFoundException.class,
-                () -> taskService.setCompleted(taskId)
+                () -> taskService.toggleCompleted(taskId)
         );
 
         assertEquals("Task not found with id: " + taskId, exception.getMessage());
@@ -266,7 +266,7 @@ public class TaskServiceImplTest {
 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
-                () -> taskService.setCompleted(taskId)
+                () -> taskService.toggleCompleted(taskId)
         );
 
         assertEquals("User not found", exception.getMessage());
@@ -290,7 +290,7 @@ public class TaskServiceImplTest {
         when(taskRepository.save(any(Task.class))).thenReturn(mockCompletedTask);
 
         // Act
-        var result = taskService.setCompleted(taskId);
+        var result = taskService.toggleCompleted(taskId);
 
         // Assert
         assertNotNull(result);

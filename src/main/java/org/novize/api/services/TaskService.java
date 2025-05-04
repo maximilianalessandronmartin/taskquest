@@ -23,14 +23,14 @@ public interface TaskService {
 
    TaskDto create(CreateTaskDto taskDto);
 
-   Task setCompleted(String id);
+   Task toggleCompleted(String id);
 
    TaskDto update(String id, UpdateTaskDto taskDto);
 
 
    TaskDto getById(String id);
 
-   TaskListDto search(String name, int page, int pageSize);
+   TaskListDto search(String name, int page, int pageSize, User user);
 
 
    void deleteById(String id);

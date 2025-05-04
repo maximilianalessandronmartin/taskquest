@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -68,23 +69,17 @@ public class TaskController {
 
 
     @PostMapping("/complete/{id}")
-    public TaskDto markAsComplete(@PathVariable String id) {
-        Task task = taskService.setCompleted(id);
-        return TaskDto.builder()
-                .id(task.getId())
-                .name(task.getName())
-                .description(task.getDescription())
-                .dueDate(task.getDueDate())
-                .urgency(task.getUrgency())
-                .completed(task.getCompleted())
-                .createdAt(task.getCreatedAt())
-                .updatedAt(task.getUpdatedAt())
-                .build();
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public TaskDto toggleComplete(@AuthenticationPrincipal User currentUser, @PathVariable String id) {
+        Task task = taskService.toggleCompleted(id);
+        return taskMapper.toDto(task, currentUser);
     }
 
 
     @PostMapping("/{id}/share")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<TaskDto> shareTask(
             @PathVariable String id,
             @RequestBody ShareTaskDto shareTaskDto,
@@ -95,6 +90,7 @@ public class TaskController {
 
     @DeleteMapping("/{id}/share/{username}")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<TaskDto> unshareTask(
             @PathVariable String id,
             @PathVariable String username,
@@ -105,6 +101,7 @@ public class TaskController {
 
     @GetMapping("/shared")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<List<TaskDto>> getSharedTasks(
             @AuthenticationPrincipal User currentUser) {
         List<Task> tasks = taskService.getSharedWithMeTasks(currentUser);
@@ -118,11 +115,14 @@ public class TaskController {
 
     // Endpoint to search for tasks by name with pagination
     @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
     public TaskListDto getTaskByName(
+            @AuthenticationPrincipal User currentUser,
             @RequestParam(required = false) String query,
             @RequestParam int page,
             @RequestParam int size
     ) {
-        return taskService.search(query, page, size);
+        return taskService.search(query, page, size, currentUser);
     }
 }

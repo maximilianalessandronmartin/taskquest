@@ -1,7 +1,10 @@
 package org.novize.api.exceptions;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.xml.bind.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.security.SignatureException;
 import java.util.*;
 
 /**
@@ -45,6 +49,21 @@ public class GlobalExceptionHandler {
         Map<String, List<String>> errorsMap = new HashMap<>();
         errorsMap.put("errors", errors);
         return errorsMap;
+    }
+
+    /**
+     * Handles JWTValidationException and returns a 401 Unauthorized response.
+     */
+    @ExceptionHandler({SignatureException.class, MalformedJwtException.class, JwtException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorMessage handleJWTValidationException(RuntimeException ex) {
+        return ErrorMessage
+                .builder()
+                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                .timestamp(new Date())
+                .message("Unauthorized")
+                .description(ex.getLocalizedMessage())
+                .build();
     }
 
     /**

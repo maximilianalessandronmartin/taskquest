@@ -69,7 +69,10 @@ public class SecurityConfiguration {
         configuration.setAllowedOrigins(List.of(
              
                 "http://localhost:8081",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "http://localhost:8080",
+                "http://192.168.178.61:5173",
+                "http://localhost:80"
                 )
         );
 

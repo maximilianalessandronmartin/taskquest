@@ -79,5 +79,10 @@ public class Task {
     }
 
 
+    public boolean isOwner(User user) {
+        return user != null && this.user != null && this.user.getId().equals(user.getId());
+    }
+
+
 
 }

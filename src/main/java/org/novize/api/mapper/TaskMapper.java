@@ -14,9 +14,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TaskMapper {
     private final UserMapper userMapper;
-    // Bestehenden TaskMapper erweitern
+
     public TaskDto toDto(Task task, User currentUser) {
-        TaskDto dto = toDto(task, currentUser); // Bestehende Methode aufrufen
+        TaskDto dto = new TaskDto();
+
+        // Grundlegende Eigenschaften
+        dto.setId(task.getId());
+        dto.setName(task.getName());
+        dto.setDescription(task.getDescription());
+        dto.setCreatedAt(task.getCreatedAt());
+        dto.setUpdatedAt(task.getUpdatedAt());
+        dto.setDueDate(task.getDueDate());
+        dto.setUrgency(task.getUrgency());
+        dto.setCompleted(task.getCompleted());
 
         // Erweiterte Felder
         dto.setVisibility(task.getVisibility());
@@ -31,7 +41,7 @@ public class TaskMapper {
         }
 
         // Prüfen, ob der aktuelle Benutzer der Eigentümer ist
-        dto.setOwner(task.getUser() != null && task.getUser().equals(currentUser));
+        dto.setOwner(task.isOwner(currentUser));
 
         return dto;
     }
