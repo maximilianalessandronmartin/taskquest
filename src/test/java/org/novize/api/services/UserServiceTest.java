@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.novize.api.dtos.UserDto;
+import org.novize.api.dtos.user.UserDto;
 import org.novize.api.dtos.auth.RegisterUserDto;
 import org.novize.api.enums.RoleEnum;
 import org.novize.api.model.Role;

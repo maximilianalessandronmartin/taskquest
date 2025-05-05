@@ -7,6 +7,7 @@ import org.novize.api.dtos.task.CreateTaskDto;
 import org.novize.api.dtos.task.TaskDto;
 import org.novize.api.dtos.task.TaskListDto;
 import org.novize.api.dtos.task.UpdateTaskDto;
+import org.novize.api.dtos.timer.TimerUpdateDto;
 import org.novize.api.enums.TaskVisibility;
 import org.novize.api.exceptions.InvalidRequestException;
 import org.novize.api.exceptions.UserNotFoundException;
@@ -27,6 +28,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -201,28 +204,6 @@ public class TaskServiceImpl implements TaskService {
     }
 
 
-    /**
-     * Retrieves all tasks associated with the currently authenticated user.
-     * The tasks are fetched from the repository using the user's unique identifier
-     * and sorted by their creation date in ascending order. Each task is then mapped
-     * to a {@link TaskDto} object.
-     *
-     * @return a list of {@link TaskDto} objects representing the tasks associated
-     * with the currently authenticated user
-     * @throws RuntimeException if the currently authenticated user is not found
-     */
-    @Override
-    @Transactional
-    public List<TaskDto> findAllByUserId() {
-
-        User user = getUser();
-        if (user == null) throw new RuntimeException("User not found");
-        Sort sort = Sort.by("createdAt").ascending();
-        List<Task> tasks = taskRepository.findByUserId(user.getId(), sort);
-        return tasks.stream().map(task -> taskMapper.toDto(task, user)).collect(Collectors.toList());
-
-
-    }
 
 
     /**
@@ -248,7 +229,7 @@ public class TaskServiceImpl implements TaskService {
             throw new EntityNotFoundException("Task not found with id: " + taskId);
         }
 
-        if (!task.getUser().equals(currentUser)) {
+        if (!task.getUser().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("You can only share your own tasks");
         }
 
@@ -393,7 +374,7 @@ public class TaskServiceImpl implements TaskService {
     public Task unshareTask(String taskId, String username, User currentUser) {
         Task task = findById(taskId);
 
-        if (!task.getUser().equals(currentUser)) {
+        if (!task.getUser().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("Sie können nur eigene Tasks nicht mehr teilen");
         }
 
@@ -415,6 +396,11 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findSharedWithUser(user);
     }
 
+    @Override
+    public List<Task> getOwnedTasks(User currentUser) {
+        return taskRepository.findByUserId(currentUser.getId(), Sort.by("createdAt"));
+    }
+
     /**
      * Gibt alle Tasks zurück, die der Benutzer erstellt hat oder die mit ihm geteilt wurden
      */
@@ -422,5 +408,143 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findTasksForUser(user);
     }
 
+    /**
+     * Starts the timer for a specific task. This method activates the timer for the given task,
+     * sets default values for the timer if necessary, and updates the task's state accordingly.
+     * The user must have access rights to the task to start the timer.
+     *
+     * @param taskId the unique identifier of the task for which the timer is to be started
+     * @param currentUser the user attempting to start the timer, used for authorization checks
+     * @return a TaskDto object containing the updated task details after the timer has been started
+     * @throws AccessDeniedException if the current user does not have access to the given task
+     */
+    @Override
+    public TaskDto startTimer(String taskId, User currentUser) {
+        Task task = findById(taskId);
+        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+            throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
+        }
+
+        // Standardwert setzen, falls nicht gesetzt
+        if (task.getPomodoroTimeSeconds() == null) {
+            task.setPomodoroTimeSeconds(25 * 60); // 25 Minuten in Sekunden
+        }
+
+        // Falls remainingTimeSeconds nicht gesetzt oder 0 ist, auf pomodoroTimeSeconds zurücksetzen
+        if (task.getRemainingTimeSeconds() == null || task.getRemainingTimeSeconds() <= 0) {
+            task.setRemainingTimeSeconds(task.getPomodoroTimeSeconds());
+        }
+
+        task.setTimerActive(true);
+        task.setLastTimerUpdateTimestamp(LocalDateTime.now());
+
+        return taskMapper.toDto(taskRepository.save(task), currentUser);
+    }
+
+
+    /**
+     * Pauses the timer for the specified task if the user has access to the task.
+     *
+     * @param taskId the ID of the task whose timer is to be paused
+     * @param currentUser the user attempting to pause the task's timer
+     * @return a TaskDto object representing the updated task with the paused timer
+     * @throws AccessDeniedException if the user is not the owner or not shared on the task
+     */
+    @Override
+    public TaskDto pauseTimer(String taskId, User currentUser) {
+        Task task = findById(taskId);
+        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+            throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
+        }
+
+        // Berechne verstrichene Zeit und aktualisiere verbleibende Zeit
+        LocalDateTime now = LocalDateTime.now();
+        if (task.getLastTimerUpdateTimestamp() != null && Boolean.TRUE.equals(task.getTimerActive())) {
+            long elapsedSeconds = ChronoUnit.SECONDS.between(task.getLastTimerUpdateTimestamp(), now);
+            int newRemainingTime = Math.max(0, task.getRemainingTimeSeconds() - (int)elapsedSeconds);
+            task.setRemainingTimeSeconds(newRemainingTime);
+        }
+
+        task.setTimerActive(false);
+
+        return taskMapper.toDto(taskRepository.save(task), currentUser);
+    }
+
+    /**
+     * Resets the timer for a given task. The remaining time of the task is reset
+     * to its default Pomodoro duration, and the timer is deactivated.
+     *
+     * @param taskId the unique identifier of the task
+     * @param currentUser the user performing the operation, used to verify access rights
+     * @return the updated task information as a TaskDto
+     * @throws AccessDeniedException if the current user does not own the task
+     *         or does not have shared access to it
+     */
+    @Override
+    public TaskDto resetTimer(String taskId, User currentUser) {
+        Task task = findById(taskId);
+        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+            throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
+        }
+
+        // Standardwert setzen, falls nicht gesetzt
+        if (task.getPomodoroTimeSeconds() == null) {
+            task.setPomodoroTimeSeconds(25 * 60); // 25 Minuten in Sekunden
+        }
+
+        task.setRemainingTimeSeconds(task.getPomodoroTimeSeconds());
+        task.setTimerActive(false);
+
+        return taskMapper.toDto(taskRepository.save(task), currentUser);
+    }
+
+    /**
+     * Updates the timer details of a specific task based on the provided input.
+     * The method allows updating the remaining time and toggling the timer's active state.
+     * Only the task owner or users the task is shared with are authorized to update the timer.
+     *
+     * @param taskId the unique identifier of the task whose timer is being updated
+     * @param timerUpdateDto an object containing the timer details to be updated,
+     *        such as remaining time in minutes and the timer's active state
+     * @param currentUser the currently authenticated user requesting the update
+     * @return a {@code TaskDto} object representing the updated task with the modified timer details
+     * @throws AccessDeniedException if the current user is neither the owner of the task
+     *         nor included in the task's shared list
+     */
+    @Override
+    public TaskDto updateTimer(String taskId, TimerUpdateDto timerUpdateDto, User currentUser) {
+        Task task = findById(taskId);
+        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+            throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
+        }
+
+        // Aktualisiere verbleibende Zeit, falls angegeben
+        if (timerUpdateDto.getRemainingTimeSeconds() != null) {
+            task.setRemainingTimeSeconds(timerUpdateDto.getRemainingTimeSeconds());
+        }
+
+        // Aktualisiere Timer-Status, falls angegeben
+        if (timerUpdateDto.getTimerActive() != null) {
+            // Wenn der Timer bereits aktiv ist und aktiv bleiben soll,
+            // aktuelle verstrichene Zeit berücksichtigen
+            if (Boolean.TRUE.equals(task.getTimerActive()) && Boolean.TRUE.equals(timerUpdateDto.getTimerActive())) {
+                LocalDateTime now = LocalDateTime.now();
+                if (task.getLastTimerUpdateTimestamp() != null) {
+                    long elapsedSeconds = ChronoUnit.SECONDS.between(task.getLastTimerUpdateTimestamp(), now);
+                    int newRemainingTime = Math.max(0, task.getRemainingTimeSeconds() - (int)elapsedSeconds);
+                    task.setRemainingTimeSeconds(newRemainingTime);
+                }
+            }
+
+            task.setTimerActive(timerUpdateDto.getTimerActive());
+
+            // Bei Aktivierung Zeitstempel aktualisieren
+            if (Boolean.TRUE.equals(timerUpdateDto.getTimerActive())) {
+                task.setLastTimerUpdateTimestamp(LocalDateTime.now());
+            }
+        }
+
+        return taskMapper.toDto(taskRepository.save(task), currentUser);
+    }
 
 }

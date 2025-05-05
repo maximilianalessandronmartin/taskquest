@@ -2,7 +2,7 @@ package org.novize.api.services;
 
 import org.novize.api.dtos.auth.LoginUserDto;
 import org.novize.api.dtos.auth.RegisterUserDto;
-import org.novize.api.dtos.UserDto;
+import org.novize.api.dtos.user.UserDto;
 import org.novize.api.enums.RoleEnum;
 import org.novize.api.model.Role;
 import org.novize.api.model.User;

@@ -5,6 +5,7 @@ import org.novize.api.dtos.task.CreateTaskDto;
 import org.novize.api.dtos.task.TaskDto;
 import org.novize.api.dtos.task.TaskListDto;
 import org.novize.api.dtos.task.UpdateTaskDto;
+import org.novize.api.dtos.timer.TimerUpdateDto;
 import org.novize.api.model.Task;
 import org.novize.api.model.User;
 import org.springframework.stereotype.Service;
@@ -36,8 +37,6 @@ public interface TaskService {
    void deleteById(String id);
 
 
-   List<TaskDto> findAllByUserId();
-
    Task shareTaskwithFriend(String taskId, String friendId, User currentUser);
 
    Task unshareTask(String id, String username, User currentUser);
@@ -45,4 +44,16 @@ public interface TaskService {
    boolean existsById(String id);
 
    List<Task> getSharedWithMeTasks(User currentUser);
+
+   List<Task> getOwnedTasks(User currentUser);
+
+   List<Task> getAllTasksForUser(User currentUser);
+
+   TaskDto startTimer(String id, User currentUser);
+
+   TaskDto pauseTimer(String id, User currentUser);
+
+   TaskDto resetTimer(String id, User currentUser);
+
+   TaskDto updateTimer(String id, TimerUpdateDto timerUpdateDto, User currentUser);
 }

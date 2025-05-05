@@ -25,13 +25,16 @@ public interface TaskRepository extends PagingAndSortingRepository<Task, String>
 
     List<Task> findByUserId(String id, Sort sort);
 
-    List<Task> findAllByUserId(String id);
+
+
 
     Page<Task> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
+    // Tasks that are shared with a user and tasks that are owned by the user
     @Query("SELECT t FROM Task t WHERE t.user = :user OR :user MEMBER OF t.sharedWith")
     List<Task> findTasksForUser(@Param("user") User user);
 
+    // Tasks that are shared by a user
     @Query("SELECT t FROM Task t WHERE :user MEMBER OF t.sharedWith")
     List<Task> findSharedWithUser(@Param("user") User user);
 

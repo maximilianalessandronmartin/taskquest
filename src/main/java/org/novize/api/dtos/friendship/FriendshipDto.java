@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.novize.api.dtos.UserDto;
+import org.novize.api.dtos.user.UserDto;
 import org.novize.api.enums.FriendshipStatus;
 
 import java.time.LocalDateTime;

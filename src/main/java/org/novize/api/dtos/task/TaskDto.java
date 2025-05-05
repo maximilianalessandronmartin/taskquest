@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import lombok.*;
-import org.novize.api.dtos.UserDto;
+import org.novize.api.dtos.user.UserDto;
 import org.novize.api.enums.TaskVisibility;
 import org.novize.api.enums.Urgency;
 
@@ -43,6 +43,13 @@ public class TaskDto {
     private TaskVisibility visibility;
     private List<UserDto> sharedWith;
     private boolean isOwner;
+
+    private Integer pomodoroTimeSeconds;
+    private Integer remainingTimeSeconds;
+    private LocalDateTime lastTimerUpdateTimestamp;
+    private Boolean timerActive;
+
+
 
 
 

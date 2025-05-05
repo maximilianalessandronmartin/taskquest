@@ -1,4 +1,4 @@
-package org.novize.api.dtos;
+package org.novize.api.dtos.auth;
 
 import lombok.Builder;
 import lombok.Data;

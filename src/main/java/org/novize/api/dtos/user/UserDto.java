@@ -1,8 +1,7 @@
-package org.novize.api.dtos;
+package org.novize.api.dtos.user;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 

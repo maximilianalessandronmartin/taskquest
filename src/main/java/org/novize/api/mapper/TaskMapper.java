@@ -43,6 +43,13 @@ public class TaskMapper {
         // Prüfen, ob der aktuelle Benutzer der Eigentümer ist
         dto.setOwner(task.isOwner(currentUser));
 
+        // Timer-Status
+        dto.setPomodoroTimeSeconds(task.getPomodoroTimeSeconds());
+        dto.setRemainingTimeSeconds(task.getRemainingTimeSeconds());
+        dto.setLastTimerUpdateTimestamp(task.getLastTimerUpdateTimestamp());
+        dto.setTimerActive(task.getTimerActive());
+
+
         return dto;
     }
 }

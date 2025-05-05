@@ -1,10 +1,9 @@
 package org.novize.api.mapper;
 
 import lombok.RequiredArgsConstructor;
-import org.novize.api.dtos.UserDto;
+import org.novize.api.dtos.user.UserDto;
 import org.novize.api.model.User;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Component
 @RequiredArgsConstructor

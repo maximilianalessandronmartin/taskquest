@@ -1,6 +1,6 @@
 package org.novize.api.controller;
 
-import org.novize.api.dtos.UserDto;
+import org.novize.api.dtos.user.UserDto;
 import org.novize.api.model.User;
 import org.novize.api.services.UserService;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +39,8 @@ public class UserController {
 
         return UserDto.builder()
                 .id(currentUser.getId())
+                .createdAt(currentUser.getCreatedAt())
+                .email(currentUser.getEmail())
                 .username(currentUser.getUsername())
                 .firstname(currentUser.getFirstname())
                 .lastname(currentUser.getLastname())

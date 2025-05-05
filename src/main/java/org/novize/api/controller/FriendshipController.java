@@ -37,6 +37,7 @@ public class FriendshipController {
     }
 
     @PostMapping("/send")
+    @PreAuthorize("isAuthenticated()")
     public void sendFriendRequest(@AuthenticationPrincipal User sender, @RequestParam String receiverMail) {
         // Logik, um den Empfänger zu finden und die Anfrage zu senden
        User receiver = userService.findUserByEmail(receiverMail);

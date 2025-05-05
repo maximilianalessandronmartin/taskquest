@@ -67,6 +67,13 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskVisibility visibility = TaskVisibility.PRIVATE;
 
+    // Pomodoro-Timer
+    private Integer pomodoroTimeSeconds = 25 * 60; // Gesamtdauer der Aufgabe in Minuten
+    private Integer remainingTimeSeconds = 25 * 60; // Verbleibende Zeit in Minuten
+    private LocalDateTime lastTimerUpdateTimestamp; // Zeitpunkt der letzten Timer-Aktualisierung
+    private Boolean timerActive = false; // Zeigt an, ob der Timer aktiv ist
+
+
 
 
     @Builder
