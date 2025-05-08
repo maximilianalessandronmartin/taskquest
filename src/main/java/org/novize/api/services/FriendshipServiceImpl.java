@@ -1,6 +1,7 @@
 package org.novize.api.services;
 
 import org.novize.api.enums.FriendshipStatus;
+import org.novize.api.enums.NotificationType;
 import org.novize.api.exceptions.FriendshipNotFoundException;
 import org.novize.api.exceptions.InvalidRequestException;
 import org.novize.api.model.Friendship;
@@ -26,7 +27,8 @@ public class FriendshipServiceImpl implements FriendshipService {
     private UserRepository userRepository;
     @Autowired
     private FriendshipRepository friendshipRepository;
-
+    @Autowired
+    private NotificationService notificationService;
 
     // Method to get all friends of a user
     public List<Friendship> getFriendshipsByUser(User user) {
@@ -49,7 +51,7 @@ public class FriendshipServiceImpl implements FriendshipService {
      * This method creates a new {@link Friendship} instance with a status of PENDING
      * and persists it to the database.
      *
-     * @param sender the user sending the friend request
+     * @param sender   the user sending the friend request
      * @param receiver the user receiving the friend request
      */
     public void sendFriendRequest(User sender, User receiver) {
@@ -70,7 +72,16 @@ public class FriendshipServiceImpl implements FriendshipService {
                 .status(FriendshipStatus.PENDING)
                 .build();
 
+
         friendshipRepository.save(friendship);
+        // Send a notification to the receiver
+        notificationService.sendNotification(
+                receiver,
+                NotificationType.FRIEND_REQUEST,
+                sender.getUsername() + " send you a friend request",
+                "{\"senderId\": \"" + sender.getId() + "\"}"
+        );
+
     }
 
 
@@ -79,17 +90,24 @@ public class FriendshipServiceImpl implements FriendshipService {
      * and saving the updated friendship instance in the repository.
      *
      * @param friendship the friendship instance representing the pending friend request
-     *                    to be accepted
+     *                   to be accepted
      */
     public void acceptFriendRequest(Friendship friendship) {
-            // Check if the friendship is already accepted or is null
-            if (friendship == null || friendship.getStatus() != FriendshipStatus.PENDING) {
-                throw new IllegalArgumentException("Friend request is not pending or does not exist.");
-            }
-            // Update the status to ACCEPTED
-            friendship.setStatus(FriendshipStatus.ACCEPTED);
-            // Save the updated friendship instance
-            friendshipRepository.save(friendship);
+        // Check if the friendship is already accepted or is null
+        if (friendship == null || friendship.getStatus() != FriendshipStatus.PENDING) {
+            throw new IllegalArgumentException("Friend request is not pending or does not exist.");
+        }
+        // Update the status to ACCEPTED
+        friendship.setStatus(FriendshipStatus.ACCEPTED);
+        // Save the updated friendship instance
+        friendshipRepository.save(friendship);
+        notificationService.sendNotification(
+                friendship.getUser(),
+                NotificationType.FRIEND_REQUEST_ACCEPTED,
+                friendship.getFriend().getFirstname() + " " + friendship.getFriend().getLastname() + " hat Ihre Freundschaftsanfrage angenommen",
+                "{\"receiverId\": \"" + friendship.getFriend().getId() + "\"}"
+        );
+
     }
 
     /**
@@ -127,7 +145,7 @@ public class FriendshipServiceImpl implements FriendshipService {
      * between the current user and the given friend with the status set to ACCEPTED.
      *
      * @param currentUser the user initiating the friendship check
-     * @param friend the user whose friendship status with the current user is being checked
+     * @param friend      the user whose friendship status with the current user is being checked
      * @return true if the users are friends (friendship exists with status ACCEPTED), false otherwise
      */
     @Override

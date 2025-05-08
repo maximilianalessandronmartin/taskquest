@@ -8,6 +8,7 @@ import org.novize.api.dtos.task.TaskDto;
 import org.novize.api.dtos.task.TaskListDto;
 import org.novize.api.dtos.task.UpdateTaskDto;
 import org.novize.api.dtos.timer.TimerUpdateDto;
+import org.novize.api.enums.NotificationType;
 import org.novize.api.enums.TaskVisibility;
 import org.novize.api.exceptions.InvalidRequestException;
 import org.novize.api.exceptions.UserNotFoundException;
@@ -59,8 +60,9 @@ public class TaskServiceImpl implements TaskService {
     UserDetailsService userDetailsService;
     @Autowired
     UserService userService;
+
     @Autowired
-    AchievementService achievementService;
+    NotificationService notificationService;
 
 
     @Override
@@ -206,47 +208,6 @@ public class TaskServiceImpl implements TaskService {
 
 
 
-    /**
-     * Shares a task with a specified friend if the current user owns the task
-     * and the friend is in their friend list. The task's visibility is updated
-     * to reflect the sharing status, and the friend is added to the task's
-     * shared list.
-     *
-     * @param taskId     the unique identifier of the task to be shared
-     * @param friendId   the username of the friend with whom the task is to be shared
-     * @param currentUser the {@link User} object representing the currently authenticated user
-     * @return the updated {@link Task} object with the sharing information applied
-     * @throws EntityNotFoundException if the task with the given ID does not exist
-     * @throws AccessDeniedException   if the current user does not own the task
-     * @throws UserNotFoundException   if the friend with the given username is not found
-     * @throws InvalidRequestException if the specified friend is not in the current user's friend list
-     */
-    @Override
-
-    public Task shareTaskwithFriend(String taskId, String friendId, User currentUser) {
-        Task task = findById(taskId);
-        if (task == null) {
-            throw new EntityNotFoundException("Task not found with id: " + taskId);
-        }
-
-        if (!task.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You can only share your own tasks");
-        }
-
-        User friend = userService.findUserByUsername(friendId);
-        if (friend == null) {
-            throw new UserNotFoundException("Friend not found with username: " + friendId);
-        }
-
-        if (friendshipService.areNotFriends(currentUser, friend)) {
-            throw new InvalidRequestException("You can only share tasks with friends");
-        }
-
-        task.getSharedWith().add(friend);
-        task.setVisibility(TaskVisibility.SHARED);
-
-        return taskRepository.save(task);
-    }
 
 
     /**
@@ -335,30 +296,55 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.deleteById(id);
     }
 
-
     /**
-     * Teilt einen Task mit einem Freund
+     * Shares a task with a specified friend if the current user owns the task
+     * and the friend is in their friend list. The task's visibility is updated
+     * to reflect the sharing status, and the friend is added to the task's
+     * shared list.
+     *
+     * @param taskId     the unique identifier of the task to be shared
+     * @param friendId   the username of the friend with whom the task is to be shared
+     * @param currentUser the {@link User} object representing the currently authenticated user
+     * @return the updated {@link Task} object with the sharing information applied
+     * @throws EntityNotFoundException if the task with the given ID does not exist
+     * @throws AccessDeniedException   if the current user does not own the task
+     * @throws UserNotFoundException   if the friend with the given username is not found
+     * @throws InvalidRequestException if the specified friend is not in the current user's friend list
      */
-    public Task shareTaskWithFriend(String taskId, String username, User currentUser) {
+    @Override
+    public Task shareTaskwithFriend(String taskId, String friendId, User currentUser) {
         Task task = findById(taskId);
-
-        if (!task.getUser().equals(currentUser)) {
-            throw new AccessDeniedException("Sie können nur eigene Tasks teilen");
+        if (task == null) {
+            throw new EntityNotFoundException("Task not found with id: " + taskId);
         }
 
-        User friend = userService.findUserByUsername(username);
+        if (!task.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You can only share your own tasks");
+        }
 
-        // Prüfen, ob Benutzer befreundet sind
+        User friend = userService.findUserByUsername(friendId);
+        if (friend == null) {
+            throw new UserNotFoundException("Friend not found with username: " + friendId);
+        }
+
         if (friendshipService.areNotFriends(currentUser, friend)) {
-            throw new InvalidRequestException("Sie können Tasks nur mit Freunden teilen");
+            throw new InvalidRequestException("You can only share tasks with friends");
         }
-        if (!task.getSharedWith().contains(friend)) {
-            task.getSharedWith().add(friend);
-            task.setVisibility(TaskVisibility.SHARED);
-            return taskRepository.save(task);
-        }
-        return task;
+
+        task.getSharedWith().add(friend);
+        task.setVisibility(TaskVisibility.SHARED);
+
+        notificationService.sendNotification(
+                friend,
+                NotificationType.TASK_SHARED,
+                currentUser.getFirstname() + " " + currentUser.getLastname() + " shares the task " + task.getName() + " with you",
+                "{\"senderId\": \"" + currentUser.getId() + "\"}"
+        );
+
+        return taskRepository.save(task);
     }
+
+
 
     /**
      * Unshares a task with a specified user. This method removes the specified user

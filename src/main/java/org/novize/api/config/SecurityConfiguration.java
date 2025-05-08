@@ -50,7 +50,8 @@ public class SecurityConfiguration {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/public/**", "/resources/**","/resources/public/**", "/api/uploads/images/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/auth/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws/**", "/ws/info/**", "/ws/info"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -76,13 +77,14 @@ public class SecurityConfiguration {
                 "http://localhost:5173",
                 "http://localhost:8080",
                 "http://192.168.178.61:5173",
+                "http://192.168.178.61:8080",
                 "http://localhost:80"
                 )
         );
 
         configuration.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("*"));
-
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**",configuration);

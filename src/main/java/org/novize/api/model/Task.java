@@ -3,15 +3,12 @@ package org.novize.api.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.novize.api.enums.TaskVisibility;
 import org.novize.api.enums.Urgency;
-
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -87,8 +84,12 @@ public class Task {
 
 
     public boolean isOwner(User user) {
-        return user != null && this.user != null && this.user.getId().equals(user.getId());
+        return user != null &&
+                this.sharedWith.stream()
+                        .anyMatch(sharedUser -> sharedUser.getId().equals(user.getId()));
     }
+
+
 
 
 
