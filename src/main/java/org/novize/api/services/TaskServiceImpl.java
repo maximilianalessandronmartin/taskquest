@@ -192,6 +192,8 @@ public class TaskServiceImpl implements TaskService {
             task.setCompleted(taskDto.getCompleted());
         }
 
+
+
         var updatedTask = taskRepository.save(task);
         return TaskDto.builder()
                 .id(updatedTask.getId())
@@ -242,7 +244,32 @@ public class TaskServiceImpl implements TaskService {
         if (task == null) {
             throw new EntityNotFoundException("Task not found");
         }
+        // Timer aktualisieren, falls aktiv
+        if (task.getTimerActive() && task.getLastTimerUpdateTimestamp() != null) {
+            // Zeit seit der letzten Aktualisierung berechnen
+            long elapsedSeconds = java.time.Duration.between(
+                    task.getLastTimerUpdateTimestamp(),
+                    LocalDateTime.now()
+            ).getSeconds();
+
+            // Verbleibende Zeit berechnen und sicherstellen, dass sie nicht negativ wird
+            int newRemainingTime = Math.max(0, task.getRemainingTimeSeconds() - (int)elapsedSeconds);
+
+            // Timer anhalten, wenn die Zeit abgelaufen ist
+            if (newRemainingTime == 0) {
+                task.setTimerActive(false);
+            }
+
+            // Werte aktualisieren
+            task.setRemainingTimeSeconds(newRemainingTime);
+            task.setLastTimerUpdateTimestamp(LocalDateTime.now());
+
+            // Aktualisierte Task speichern
+            taskRepository.save(task);
+        }
+
         return taskMapper.toDto(task, getUser());
+
     }
 
 
@@ -407,7 +434,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto startTimer(String taskId, User currentUser) {
         Task task = findById(taskId);
-        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+        if (!task.hasAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 
@@ -439,7 +466,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto pauseTimer(String taskId, User currentUser) {
         Task task = findById(taskId);
-        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+        if (!task.hasAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 
@@ -447,8 +474,32 @@ public class TaskServiceImpl implements TaskService {
         LocalDateTime now = LocalDateTime.now();
         if (task.getLastTimerUpdateTimestamp() != null && Boolean.TRUE.equals(task.getTimerActive())) {
             long elapsedSeconds = ChronoUnit.SECONDS.between(task.getLastTimerUpdateTimestamp(), now);
-            int newRemainingTime = Math.max(0, task.getRemainingTimeSeconds() - (int)elapsedSeconds);
-            task.setRemainingTimeSeconds(newRemainingTime);
+
+            // Spezialfall: Wenn die verbleibende Zeit 1 Sekunde oder weniger beträgt
+            // und der Timer pausiert wird, setzen wir sie auf 0
+            if (task.getRemainingTimeSeconds() <= 1) {
+                task.setRemainingTimeSeconds(0);
+                // Send Notification to user and potentially to shared users
+                notificationService.sendNotification(
+                        currentUser,
+                        NotificationType.TASK_COMPLETED,
+                        "The Timer for the Task: " + task.getName() + " completed",
+                        "{\"taskId\": \"" + task.getId() + "\"}"
+                );
+                if (!task.getSharedWith().isEmpty()) {
+                    for (User sharedUser : task.getSharedWith()) {
+                        notificationService.sendNotification(
+                                sharedUser,
+                                NotificationType.TASK_COMPLETED,
+                                "The Timer for the Task: " + task.getName() + " completed",
+                                "{\"taskId\": \"" + task.getId() + "\"}"
+                        );
+                    }
+                }
+            } else {
+                int newRemainingTime = Math.max(0, task.getRemainingTimeSeconds() - (int)elapsedSeconds);
+                task.setRemainingTimeSeconds(newRemainingTime);
+            }
         }
 
         task.setTimerActive(false);
@@ -469,7 +520,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto resetTimer(String taskId, User currentUser) {
         Task task = findById(taskId);
-        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+        if (!task.hasAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 
@@ -500,7 +551,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto updateTimer(String taskId, TimerUpdateDto timerUpdateDto, User currentUser) {
         Task task = findById(taskId);
-        if (!task.isOwner(currentUser) && !task.getSharedWith().contains(currentUser)) {
+        if (!task.hasAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 

@@ -28,7 +28,6 @@ public class Task {
     @NotNull
     private String name;
 
-    // Default value is empty string
     private String description;
 
     @CreationTimestamp
@@ -43,10 +42,9 @@ public class Task {
 
     @Enumerated(EnumType.STRING)
     private Urgency urgency = Urgency.LOW;
-    // Due date is not required
+
     private LocalDateTime dueDate;
 
-    // Completed boolean is not required
     private Boolean completed = false;
 
     @ManyToOne
@@ -84,9 +82,14 @@ public class Task {
 
 
     public boolean isOwner(User user) {
+        return user != null && this.user.getId().equals(user.getId());
+    }
+
+    public boolean hasAccess(User user) {
         return user != null &&
-                this.sharedWith.stream()
-                        .anyMatch(sharedUser -> sharedUser.getId().equals(user.getId()));
+                (this.user.getId().equals(user.getId()) ||
+                        this.sharedWith.stream()
+                                .anyMatch(sharedUser -> sharedUser.getId().equals(user.getId())));
     }
 
 

@@ -1,6 +1,8 @@
 package org.novize.api.services;
 
+import org.novize.api.dtos.NotificationDto;
 import org.novize.api.enums.NotificationType;
+import org.novize.api.mapper.NotificationMapper;
 import org.novize.api.model.Notification;
 import org.novize.api.model.User;
 import org.novize.api.repository.NotificationRepository;
@@ -19,10 +21,13 @@ public class NotificationService {
     @Autowired
     SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    NotificationMapper notificationMapper;
+
     /**
      * Sendet eine Benachrichtigung an einen Benutzer
      */
-    public Notification sendNotification(User recipient, NotificationType type, String message, String payload) {
+    public NotificationDto sendNotification(User recipient, NotificationType type, String message, String payload) {
         // Benachrichtigung in der Datenbank speichern
         Notification notification = new Notification();
         notification.setRecipient(recipient);
@@ -32,22 +37,26 @@ public class NotificationService {
 
         notification = notificationRepository.save(notification);
 
+        // NotificationDto erstellen
+        NotificationDto notificationDto = notificationMapper.toDto(notification);
+
+
         // Echtzeit-Benachrichtigung über WebSocket senden
         messagingTemplate.convertAndSendToUser(
                 recipient.getEmail(),
                 "/queue/notifications",
-                notification
+                notificationDto
         );
 
-        return notification;
+        return notificationDto;
     }
 
     /**
      * Holt alle ungelesenen Benachrichtigungen für einen Benutzer
      */
-    public List<Notification> getUnreadNotifications(User user) {
-        return notificationRepository.findByRecipientAndReadFalseOrderByCreatedAtDesc(user);
-    }
+    public List<NotificationDto> getUnreadNotifications(User user) {
+        var notifications =  notificationRepository.findByRecipientAndReadFalseOrderByCreatedAtDesc(user);
+        return notificationMapper.toDtoList(notifications);    }
 
     /**
      * Markiert eine Benachrichtigung als gelesen

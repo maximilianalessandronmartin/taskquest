@@ -1,5 +1,6 @@
 package org.novize.api.controller;
 
+import org.novize.api.dtos.NotificationDto;
 import org.novize.api.model.Notification;
 import org.novize.api.model.User;
 import org.novize.api.services.NotificationService;
@@ -17,7 +18,7 @@ public class NotificationController {
     NotificationService notificationService;
 
     @GetMapping
-    public List<Notification> getNotifications(@AuthenticationPrincipal User user) {
+    public List<NotificationDto> getNotifications(@AuthenticationPrincipal User user) {
         return notificationService.getUnreadNotifications(user);
     }
 
