@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TimerUpdateDto {
-    private Integer remainingTimeSeconds;
+    private Long remainingTimeMillis;
     private Boolean timerActive;
 }
 

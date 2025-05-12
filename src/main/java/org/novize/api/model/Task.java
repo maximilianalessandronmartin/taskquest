@@ -63,10 +63,12 @@ public class Task {
     private TaskVisibility visibility = TaskVisibility.PRIVATE;
 
     // Pomodoro-Timer
-    private Integer pomodoroTimeSeconds = 25 * 60; // Gesamtdauer der Aufgabe in Minuten
-    private Integer remainingTimeSeconds = 25 * 60; // Verbleibende Zeit in Minuten
+    // Pomodoro-Timer
+    private Long pomodoroTimeMillis = 25L * 60 * 1000; // 25 Minuten in Millisekunden
+    private Long remainingTimeMillis = 25L * 60 * 1000; // Verbleibende Zeit in Millisekunden
     private LocalDateTime lastTimerUpdateTimestamp; // Zeitpunkt der letzten Timer-Aktualisierung
     private Boolean timerActive = false; // Zeigt an, ob der Timer aktiv ist
+
 
 
 

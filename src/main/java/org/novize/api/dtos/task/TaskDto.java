@@ -44,15 +44,8 @@ public class TaskDto {
     private List<UserDto> sharedWith;
     private boolean isOwner;
 
-    private Integer pomodoroTimeSeconds;
-    private Integer remainingTimeSeconds;
+    private Long pomodoroTimeMillis;
+    private Long remainingTimeMillis;
     private LocalDateTime lastTimerUpdateTimestamp;
     private Boolean timerActive;
-
-
-
-
-
-
-
 }

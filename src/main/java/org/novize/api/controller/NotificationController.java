@@ -31,4 +31,9 @@ public class NotificationController {
     public void markAllAsRead(@AuthenticationPrincipal User user) {
         notificationService.markAllAsRead(user);
     }
+
+    @DeleteMapping("/{notificationId}")
+    public void deleteNotification(@AuthenticationPrincipal User user, @PathVariable String notificationId) {
+        notificationService.deleteNotification(notificationId);
+    }
 }

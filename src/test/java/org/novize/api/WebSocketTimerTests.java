@@ -23,7 +23,6 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
@@ -106,7 +105,7 @@ public class WebSocketTimerTests {
         expectedTaskDto.setName("Test Task");
         expectedTaskDto.setDescription("This is a test task.");
         expectedTaskDto.setTimerActive(expectedTimerActive);
-        expectedTaskDto.setRemainingTimeSeconds(expectedRemainingTimeSeconds);
+        expectedTaskDto.setRemainingTimeMillis((long) expectedRemainingTimeSeconds);
         expectedTaskDto.setCompleted(false);
         expectedTaskDto.setUrgency(Urgency.HIGH);
         expectedTaskDto.setDueDate(testTask.getDueDate());
@@ -151,7 +150,7 @@ public class WebSocketTimerTests {
             // Manuell eine WebSocket-Nachricht senden
             TimerUpdateDto updateDto = new TimerUpdateDto();
             updateDto.setTimerActive(expectedTimerActive);
-            updateDto.setRemainingTimeSeconds(expectedRemainingTimeSeconds);
+            updateDto.setRemainingTimeMillis((long) expectedRemainingTimeSeconds);
 
             // Vorhandenen messagingTemplate verwenden (nicht neu erstellen)
             messagingTemplate.convertAndSend(destination, updateDto);
@@ -165,7 +164,7 @@ public class WebSocketTimerTests {
         assertEquals(expectedTimerActive, serviceUpdate.getTimerActive(),
                 "Timer-Aktivierungsstatus sollte übereinstimmen");
         // Prüfen des Zeitwerts (könnte leicht abweichen, daher Bereichsprüfung)
-        assertNotNull(serviceUpdate.getRemainingTimeSeconds(),
+        assertNotNull(serviceUpdate.getRemainingTimeMillis(),
                 "RemainingTimeSeconds sollte nicht null sein");
 
         // 5. Verifizieren der Mock-Interaktionen
@@ -193,8 +192,8 @@ public class WebSocketTimerTests {
                 .urgency(Urgency.HIGH)
                 .dueDate(LocalDateTime.now().plusDays(1))
                 .build();
-        task.setPomodoroTimeSeconds(25 * 60); // 25 Minuten
-        task.setRemainingTimeSeconds(25 * 60); // 25 Minuten
+        task.setPomodoroTimeMillis(25 * 60 * 1000L); // 25 Minuten
+        task.setRemainingTimeMillis(25 * 60 * 1000L); // 25 Minuten
         task.setLastTimerUpdateTimestamp(LocalDateTime.now());
         task.setTimerActive(true);
 

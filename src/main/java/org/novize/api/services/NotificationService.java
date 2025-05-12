@@ -76,4 +76,10 @@ public class NotificationService {
         notifications.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(notifications);
     }
+
+    public void deleteNotification(String notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Benachrichtigung nicht gefunden"));
+        notificationRepository.delete(notification);
+    }
 }

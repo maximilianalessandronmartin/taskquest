@@ -44,8 +44,8 @@ public class TaskMapper {
         dto.setOwner(task.isOwner(currentUser));
 
         // Timer-Status
-        dto.setPomodoroTimeSeconds(task.getPomodoroTimeSeconds());
-        dto.setRemainingTimeSeconds(task.getRemainingTimeSeconds());
+        dto.setPomodoroTimeMillis(task.getPomodoroTimeMillis());
+        dto.setRemainingTimeMillis(task.getRemainingTimeMillis());
         dto.setLastTimerUpdateTimestamp(task.getLastTimerUpdateTimestamp());
         dto.setTimerActive(task.getTimerActive());
 

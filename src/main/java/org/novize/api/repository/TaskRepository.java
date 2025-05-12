@@ -38,5 +38,10 @@ public interface TaskRepository extends PagingAndSortingRepository<Task, String>
     @Query("SELECT t FROM Task t WHERE :user MEMBER OF t.sharedWith")
     List<Task> findSharedWithUser(@Param("user") User user);
 
+    @Query("SELECT t FROM Task t WHERE t.user = :user AND t.timerActive = true")
+    List<Task> findByUserAndTimerActiveTrue(@Param("user") User user);
+
+    @Query("SELECT t FROM Task t WHERE t.timerActive = true")
+    List<Task> findByTimerActiveTrue();
 
 }
