@@ -41,7 +41,7 @@ The following issues have been fixed to ensure proper functionality on Raspberry
 
 2. **Fixed docker-compose.arm64.yaml**:
    - Corrected database user in healthcheck configuration to match .env.docker
-   - Added missing environment variables for MariaDB (MARIADB_ROOT_PASSWORD, MARIADB_DATABASE, MARIADB_USER, MARIADB_PASSWORD)
+   - Added missing environment variables for MariaDB (MARIADB_ROOT_PASSWORD, MARIADB_DB, MARIADB_USER, MARIADB_PASSWORD)
    - Ensured consistent configuration with the regular docker-compose.yaml
 
 3. **Standardized docker-compose.yaml**:
@@ -54,20 +54,22 @@ The following issues have been fixed to ensure proper functionality on Raspberry
 
 If you encounter issues with the build or deployment, try the following:
 
-1. **Memory Issues**: Raspberry Pi has limited memory. The ARM64 Dockerfile includes memory settings for Java (-Xmx512m, -Xms256m) to limit memory usage. If you're still experiencing memory issues, consider increasing the swap space.
+1. **Environment Variable Warnings**: If you see warnings about environment variables not being set (e.g., "WARNING: The MARIADB_DB variable is not set"), make sure you're using the correct variable names in your docker-compose.arm64.yaml file. The ARM64 version of MariaDB expects MARIADB_DB instead of MARIADB_DATABASE.
 
-2. **Database Connection Issues**: If the application can't connect to the database, check the logs:
+2. **Memory Issues**: Raspberry Pi has limited memory. The ARM64 Dockerfile includes memory settings for Java (-Xmx512m, -Xms256m) to limit memory usage. If you're still experiencing memory issues, consider increasing the swap space.
+
+3. **Database Connection Issues**: If the application can't connect to the database, check the logs:
    ```
    docker-compose -f docker-compose.arm64.yaml logs app
    docker-compose -f docker-compose.arm64.yaml logs db
    ```
 
-3. **Build Failures**: If the build fails, try building with verbose output:
+4. **Build Failures**: If the build fails, try building with verbose output:
    ```
    DOCKER_BUILDKIT=1 docker buildx build --platform linux/arm64 --build-arg TARGETARCH=arm64 -t taskquest-app:latest --load -f Dockerfile.arm64 . --progress=plain
    ```
 
-4. **Performance Issues**: Raspberry Pi has limited CPU power. Consider optimizing the application for lower resource usage if performance is an issue.
+5. **Performance Issues**: Raspberry Pi has limited CPU power. Consider optimizing the application for lower resource usage if performance is an issue.
 
 ## Additional Resources
 
