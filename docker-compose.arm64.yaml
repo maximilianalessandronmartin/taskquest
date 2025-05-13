@@ -14,7 +14,10 @@ services:
     networks:
       - taskquest-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+
     restart: unless-stopped
 
   db:
@@ -26,6 +29,13 @@ services:
     restart: unless-stopped
     networks:
       - taskquest-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "taskquest", "-p$MARIADB_PASSWORD" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 
 
 networks:
