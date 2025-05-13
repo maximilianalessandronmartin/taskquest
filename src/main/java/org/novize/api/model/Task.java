@@ -20,6 +20,9 @@ import java.util.Set;
 @AllArgsConstructor
 
 public class Task {
+
+    private static final Long DEFAULT_POMODORO_TIME_MILLIS = 25L * 60 * 1000; // 25 Minuten
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
@@ -64,8 +67,8 @@ public class Task {
 
     // Pomodoro-Timer
     // Pomodoro-Timer
-    private Long pomodoroTimeMillis = 25L * 60 * 1000; // 25 Minuten in Millisekunden
-    private Long remainingTimeMillis = 25L * 60 * 1000; // Verbleibende Zeit in Millisekunden
+    private Long pomodoroTimeMillis = DEFAULT_POMODORO_TIME_MILLIS; // 25 Minuten in Millisekunden
+    private Long remainingTimeMillis = DEFAULT_POMODORO_TIME_MILLIS; // Verbleibende Zeit in Millisekunden
     private LocalDateTime lastTimerUpdateTimestamp; // Zeitpunkt der letzten Timer-Aktualisierung
     private Boolean timerActive = false; // Zeigt an, ob der Timer aktiv ist
 
@@ -77,7 +80,7 @@ public class Task {
     public Task(String name, String description, Urgency urgency, LocalDateTime dueDate, User user) {
         this.name = name;
         this.description = description;
-        this.urgency = urgency;
+        this.urgency = urgency != null ? urgency : Urgency.LOW;
         this.dueDate = dueDate;
         this.user = user;
     }
@@ -87,11 +90,11 @@ public class Task {
         return user != null && this.user.getId().equals(user.getId());
     }
 
-    public boolean hasAccess(User user) {
-        return user != null &&
-                (this.user.getId().equals(user.getId()) ||
+    public boolean hasNoAccess(User user) {
+        return user == null ||
+                (!this.user.getId().equals(user.getId()) &&
                         this.sharedWith.stream()
-                                .anyMatch(sharedUser -> sharedUser.getId().equals(user.getId())));
+                                .noneMatch(sharedUser -> sharedUser.getId().equals(user.getId())));
     }
 
 

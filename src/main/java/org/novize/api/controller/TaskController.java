@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.novize.api.dtos.task.*;
 import org.novize.api.dtos.timer.TimerUpdateDto;
+import org.novize.api.enums.Relation;
 import org.novize.api.mapper.TaskMapper;
 import org.novize.api.model.Task;
 import org.novize.api.model.User;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controller for managing task operations.
@@ -51,22 +51,12 @@ public class TaskController {
     @Transactional
     public ResponseEntity<List<TaskDto>> getAllTasks(
             @AuthenticationPrincipal User currentUser,
-            @RequestParam(required = false) String type) {
+            @RequestParam(required = false) Relation relation) {
 
-        List<Task> tasks;
-        if (type != null) {
-            tasks = switch (type) {
-                case "owned" -> taskService.getOwnedTasks(currentUser);
-                case "shared" -> taskService.getSharedWithMeTasks(currentUser);
-                default -> taskService.getAllTasksForUser(currentUser);
-            };
-        } else {
-            tasks = taskService.getAllTasksForUser(currentUser);
-        }
+        List<TaskDto> taskDtos;
 
-        List<TaskDto> taskDtos = tasks.stream()
-                .map(task -> taskMapper.toDto(task, currentUser))
-                .collect(Collectors.toList());
+        taskDtos = taskService.getTasksByUserAndRelation(currentUser, relation);
+
         return ResponseEntity.ok(taskDtos);
     }
 
@@ -103,7 +93,7 @@ public class TaskController {
             @PathVariable String id,
             @RequestBody ShareTaskDto shareTaskDto,
             @AuthenticationPrincipal User currentUser) {
-        Task task = taskService.shareTaskwithFriend(id, shareTaskDto.getUsername(), currentUser);
+        Task task = taskService.manageTaskSharing(id, shareTaskDto.getUsername(), currentUser, true);
         return taskMapper.toDto(task, currentUser);
     }
 
@@ -114,20 +104,16 @@ public class TaskController {
             @PathVariable String id,
             @PathVariable String username,
             @AuthenticationPrincipal User currentUser) {
-        Task task = taskService.unshareTask(id, username, currentUser);
+        Task task = taskService.manageTaskSharing(id, username, currentUser, false);
         return ResponseEntity.ok(taskMapper.toDto(task, currentUser));
     }
 
     @GetMapping("/shared")
     @PreAuthorize("isAuthenticated()")
     @Transactional
-    public ResponseEntity<List<TaskDto>> getSharedTasks(
+    public List<TaskDto> getSharedTasks(
             @AuthenticationPrincipal User currentUser) {
-        List<Task> tasks = taskService.getSharedWithMeTasks(currentUser);
-        List<TaskDto> taskDtos = tasks.stream()
-                .map(task -> taskMapper.toDto(task, currentUser))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(taskDtos);
+       return taskService.getTasksByUserAndRelation(currentUser, Relation.SHARED);
     }
 
 

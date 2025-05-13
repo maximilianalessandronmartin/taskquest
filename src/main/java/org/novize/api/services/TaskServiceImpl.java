@@ -9,6 +9,7 @@ import org.novize.api.dtos.task.TaskListDto;
 import org.novize.api.dtos.task.UpdateTaskDto;
 import org.novize.api.dtos.timer.TimerUpdateDto;
 import org.novize.api.enums.NotificationType;
+import org.novize.api.enums.Relation;
 import org.novize.api.enums.TaskVisibility;
 import org.novize.api.exceptions.InvalidRequestException;
 import org.novize.api.exceptions.UserNotFoundException;
@@ -204,19 +205,6 @@ public class TaskServiceImpl implements TaskService {
 
 
     /**
-     * Checks if a task exists in the repository by its unique identifier.
-     *
-     * @param id the unique identifier of the task to check for existence
-     * @return true if a task with the given ID exists, false otherwise
-     */
-    @Override
-    public boolean existsById(String id) {
-
-        return taskRepository.existsById(id);
-    }
-
-
-    /**
      * Retrieves a TaskDto object by its unique identifier.
      * This method fetches the task from the repository based on the provided ID,
      * and converts it into a TaskDto object. If no task is found with the given ID,
@@ -292,104 +280,93 @@ public class TaskServiceImpl implements TaskService {
     }
 
     /**
-     * Shares a task with a specified friend if the current user owns the task
-     * and the friend is in their friend list. The task's visibility is updated
-     * to reflect the sharing status, and the friend is added to the task's
-     * shared list.
+     * Manages the sharing of a task with another user. This method finds the task
+     * and validates the current user's ownership, identifies the target user to be
+     * added or removed, updates the sharing information, and adjusts the task's
+     * visibility accordingly.
      *
-     * @param taskId      the unique identifier of the task to be shared
-     * @param friendId    the username of the friend with whom the task is to be shared
-     * @param currentUser the {@link User} object representing the currently authenticated user
-     * @return the updated {@link Task} object with the sharing information applied
-     * @throws EntityNotFoundException if the task with the given ID does not exist
-     * @throws AccessDeniedException   if the current user does not own the task
-     * @throws UserNotFoundException   if the friend with the given username is not found
-     * @throws InvalidRequestException if the specified friend is not in the current user's friend list
+     * @param taskId      the unique identifier of the task to be shared or unshared
+     * @param username    the username of the user with whom the task is being shared or unshared
+     * @param currentUser the currently authenticated user who owns the task
+     * @param isSharing   a flag indicating whether the task is being shared
+     *                    (true) or unshared (false)
+     * @return the updated {@link Task} entity after processing the sharing action
      */
     @Override
-    public Task shareTaskwithFriend(String taskId, String friendId, User currentUser) {
-        Task task = findById(taskId);
-        if (task == null) {
-            throw new EntityNotFoundException("Task not found with id: " + taskId);
-        }
+    public Task manageTaskSharing(String taskId, String username, User currentUser, boolean isSharing) {
+        Task task = findAndValidateTask(taskId, currentUser);
+        User targetUser = findTargetUser(username);
 
-        if (!task.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You can only share your own tasks");
-        }
-
-        User friend = userService.findUserByUsername(friendId);
-        if (friend == null) {
-            throw new UserNotFoundException("Friend not found with username: " + friendId);
-        }
-
-        if (friendshipService.areNotFriends(currentUser, friend)) {
-            throw new InvalidRequestException("You can only share tasks with friends");
-        }
-
-        task.getSharedWith().add(friend);
-        task.setVisibility(TaskVisibility.SHARED);
-
-        notificationService.sendNotification(
-                friend,
-                NotificationType.TASK_SHARED,
-                currentUser.getFirstname() + " " + currentUser.getLastname() + " shares the task " + task.getName() + " with you",
-                "{\"senderId\": \"" + currentUser.getId() + "\"}"
-        );
+        updateTaskSharing(task, targetUser, isSharing);
+        updateTaskVisibility(task);
 
         return taskRepository.save(task);
     }
 
+    private Task findAndValidateTask(String taskId, User currentUser) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new InvalidRequestException("Aufgabe mit ID " + taskId + " nicht gefunden"));
 
-    /**
-     * Unshares a task with a specified user. This method removes the specified user
-     * from the list of users with whom the task is shared. If there are no more users
-     * sharing the task, the task's visibility is reset to PRIVATE.
-     *
-     * @param taskId      the unique identifier of the task to be unshared
-     * @param username    the username of the user to be removed from the shared list
-     * @param currentUser the currently authenticated user who owns the task
-     * @return the updated {@link Task} object after unsharing the specified user
-     * @throws AccessDeniedException if the currently authenticated user does not own the task
-     */
-    public Task unshareTask(String taskId, String username, User currentUser) {
-        Task task = findById(taskId);
-
-        if (!task.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("Sie können nur eigene Tasks nicht mehr teilen");
+        if (task.hasNoAccess(currentUser)) {
+            throw new AccessDeniedException("Kein Zugriff auf diese Aufgabe");
         }
 
-        User user = userService.findUserByUsername(username);
-        task.getSharedWith().remove(user);
+        if (!task.isOwner(currentUser)) {
+            throw new AccessDeniedException("Nur der Eigentümer kann diese Aufgabe teilen oder das Teilen aufheben");
+        }
 
-        // Wenn keine Benutzer mehr, auf die der Task geteilt wird, setzen wir ihn zurück auf PRIVATE
+        return task;
+    }
+
+    private User findTargetUser(String username) {
+        User targetUser = userService.findUserByUsername(username);
+        if (targetUser == null) {
+            throw new UserNotFoundException("Benutzer mit Benutzernamen " + username + " nicht gefunden");
+        }
+        return targetUser;
+    }
+
+    private void updateTaskSharing(Task task, User targetUser, boolean isSharing) {
+        if (isSharing) {
+            task.getSharedWith().add(targetUser);
+        } else {
+            task.getSharedWith().remove(targetUser);
+        }
+    }
+
+    private void updateTaskVisibility(Task task) {
         if (task.getSharedWith().isEmpty()) {
             task.setVisibility(TaskVisibility.PRIVATE);
+        } else if (task.getVisibility() == TaskVisibility.PRIVATE) {
+            task.setVisibility(TaskVisibility.SHARED);
         }
-
-        return taskRepository.save(task);
     }
 
-    /**
-     * Gibt alle Tasks zurück, die mit dem Benutzer geteilt wurden
-     */
-    public List<Task> getSharedWithMeTasks(User user) {
-        return taskRepository.findSharedWithUser(user);
-    }
 
     @Override
-    public List<Task> getOwnedTasks(User currentUser) {
-        return taskRepository.findByUserId(currentUser.getId(), Sort.by("createdAt"));
+    public List<TaskDto> getTasksByUserAndRelation(User currentUser, Relation relation) {
+        List<Task> tasks = fetchTasksByType(currentUser, relation);
+        return convertTasksToDto(tasks, currentUser);
     }
 
-    /**
-     * Gibt alle Tasks zurück, die der Benutzer erstellt hat oder die mit ihm geteilt wurden
-     */
-    public List<Task> getAllTasksForUser(User user) {
-        var tasks = taskRepository.findTasksForUser(user);
-        // For each task calculate the remaining time
+    private List<Task> fetchTasksByType(User currentUser, Relation relation) {
+        if (relation == null) {
+            return taskRepository.findTasksForUser(currentUser);
+        }
 
-        return tasks;
+        return switch (relation) {
+            case Relation.OWNED -> taskRepository.findByUserId(currentUser.getId(), Sort.by("createdAt"));
+            case Relation.SHARED -> taskRepository.findSharedWithUser(currentUser);
+            default -> taskRepository.findTasksForUser(currentUser);
+        };
     }
+
+    private List<TaskDto> convertTasksToDto(List<Task> tasks, User currentUser) {
+        return tasks.stream()
+                .map(task -> taskMapper.toDto(task, currentUser))
+                .collect(Collectors.toList());
+    }
+
 
     /**
      * Starts the timer for a specific task. This method activates the timer for the given task,
@@ -404,7 +381,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto startTimer(String taskId, User currentUser) {
         Task task = findById(taskId);
-        if (!task.hasAccess(currentUser)) {
+        if (task.hasNoAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 
@@ -443,7 +420,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto pauseTimer(String taskId, User currentUser) {
         Task task = findById(taskId);
-        if (!task.hasAccess(currentUser)) {
+        if (task.hasNoAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 
@@ -476,7 +453,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto resetTimer(String taskId, User currentUser) {
         Task task = findById(taskId);
-        if (!task.hasAccess(currentUser)) {
+        if (task.hasNoAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 
@@ -515,7 +492,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDto updateTimer(String taskId, TimerUpdateDto timerUpdateDto, User currentUser) {
         Task task = findById(taskId);
-        if (!task.hasAccess(currentUser)) {
+        if (task.hasNoAccess(currentUser)) {
             throw new AccessDeniedException("Sie haben keinen Zugriff auf diese Aufgabe");
         }
 
@@ -528,7 +505,7 @@ public class TaskServiceImpl implements TaskService {
         if (timerUpdateDto.getTimerActive() != null) {
             // Wenn der Timer bereits aktiv ist und aktiv bleiben soll,
             // aktuelle verstrichene Zeit berücksichtigen
-            if (Boolean.TRUE.equals(task.getTimerActive()) && Boolean.TRUE.equals(timerUpdateDto.getTimerActive())) {
+            if (Boolean.TRUE.equals(task.getTimerActive()) && timerUpdateDto.getTimerActive()) {
                 LocalDateTime now = LocalDateTime.now();
                 if (task.getLastTimerUpdateTimestamp() != null) {
                     long elapsedSeconds = ChronoUnit.SECONDS.between(task.getLastTimerUpdateTimestamp(), now);
