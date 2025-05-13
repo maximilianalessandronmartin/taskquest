@@ -38,7 +38,8 @@ services:
       MARIADB_DB: taskquest
       MARIADB_USER: taskquest_user
       MARIADB_PASSWORD: secure_password
-
+    ports:
+      - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -46,7 +47,7 @@ services:
     networks:
       - taskquest-network
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "taskquest_user", "-psecure_password" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "taskquest_user", "-p${MARIADB_PASSWORD}" ]
       interval: 10s
       timeout: 5s
       retries: 5
