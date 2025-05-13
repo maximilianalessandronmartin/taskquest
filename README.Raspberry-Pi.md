@@ -17,7 +17,12 @@ This document provides instructions for building and running TaskQuest on a Rasp
    cd taskquest
    ```
 
-2. Build and run using the ARM64-specific configuration:
+2. Create a symbolic link from .env to .env.docker to ensure environment variables are properly loaded:
+   ```
+   ln -s .env.docker .env
+   ```
+
+3. Build and run using the ARM64-specific configuration:
    ```
    docker-compose -f docker-compose.arm64.yaml up -d
    ```
@@ -28,7 +33,7 @@ This document provides instructions for building and running TaskQuest on a Rasp
    ./build.sh
    ```
 
-3. Access the application at `http://localhost:8080`
+4. Access the application at `http://localhost:8080`
 
 ## Recent Fixes for Raspberry Pi Compatibility
 
@@ -50,11 +55,29 @@ The following issues have been fixed to ensure proper functionality on Raspberry
    - Updated healthcheck configuration
    - Added environment variable substitution for PORT and UPLOAD_DIR
 
+4. **Fixed Environment Variable Warnings**:
+   - Added instructions to create a symbolic link from .env to .env.docker
+   - Updated setup instructions to include the symbolic link step
+   - Added detailed troubleshooting information for environment variable warnings
+
 ## Troubleshooting
 
 If you encounter issues with the build or deployment, try the following:
 
-1. **Environment Variable Warnings**: If you see warnings about environment variables not being set (e.g., "WARNING: The MARIADB_DB variable is not set"), make sure you're using the correct variable names in your docker-compose.arm64.yaml file. The ARM64 version of MariaDB expects MARIADB_DB instead of MARIADB_DATABASE.
+1. **Environment Variable Warnings**: If you see warnings about environment variables not being set (e.g., "WARNING: The MARIADB_DB variable is not set"), try one of these solutions:
+   - Create a symbolic link from .env to .env.docker:
+     ```
+     ln -s .env.docker .env
+     ```
+   - Explicitly specify the environment file when running docker-compose:
+     ```
+     docker-compose -f docker-compose.arm64.yaml --env-file .env.docker up -d
+     ```
+   - Copy the .env.docker file to .env:
+     ```
+     cp .env.docker .env
+     ```
+   - Make sure you're using the correct variable names in your docker-compose.arm64.yaml file. The ARM64 version of MariaDB expects MARIADB_DB instead of MARIADB_DATABASE.
 
 2. **Memory Issues**: Raspberry Pi has limited memory. The ARM64 Dockerfile includes memory settings for Java (-Xmx512m, -Xms256m) to limit memory usage. If you're still experiencing memory issues, consider increasing the swap space.
 
