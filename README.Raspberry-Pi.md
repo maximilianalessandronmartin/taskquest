@@ -41,6 +41,7 @@ The following issues have been fixed to ensure proper functionality on Raspberry
 
 2. **Fixed docker-compose.arm64.yaml**:
    - Corrected database user in healthcheck configuration to match .env.docker
+   - Added missing environment variables for MariaDB (MARIADB_ROOT_PASSWORD, MARIADB_DATABASE, MARIADB_USER, MARIADB_PASSWORD)
    - Ensured consistent configuration with the regular docker-compose.yaml
 
 3. **Standardized docker-compose.yaml**:
