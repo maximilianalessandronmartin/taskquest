@@ -60,14 +60,15 @@ Die Anwendung kann auch mit Docker und Docker Compose ausgeführt werden:
 docker-compose up -d
 ```
 
-Für ARM64-Architekturen (z.B. Apple Silicon):
+Für ARM64-Architekturen (z.B. Apple Silicon oder Raspberry Pi):
 
 ```
 docker-compose -f docker-compose.arm64.yaml up -d
 ```
 
-
-Weitere Informationen finden Sie in der Datei `README.Docker.md`.
+Weitere Informationen finden Sie in den Dateien:
+- `README.Docker.md` - Allgemeine Docker-Informationen
+- `README.Raspberry-Pi.md` - Spezifische Anweisungen für Raspberry Pi
 
 ## API-Dokumentation
 
@@ -103,6 +104,3 @@ Die Anwendung verwendet WebSockets für Echtzeit-Updates, insbesondere für die 
 3. Änderungen committen (`git commit -m 'Add some AmazingFeature'`)
 4. Branch pushen (`git push origin feature/AmazingFeature`)
 5. Pull Request erstellen
-
-
-

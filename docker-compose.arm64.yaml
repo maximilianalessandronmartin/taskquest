@@ -33,7 +33,7 @@ services:
     networks:
       - taskquest-network
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "taskquest", "-p$MARIADB_PASSWORD" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "taskquest_user", "-p$MARIADB_PASSWORD" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,4 +48,3 @@ networks:
 volumes:
   db-data:
   uploads:
-

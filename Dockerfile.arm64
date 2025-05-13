@@ -15,19 +15,18 @@ RUN ./mvnw package -DskipTests
 # Runtime-Stage
 FROM arm64v8/eclipse-temurin:23-jre
 
+WORKDIR /app
+
 # Create a non-privileged user
-ARG UID=10001
 ARG UID=10001
 RUN adduser \
     --disabled-password \
     --gecos "" \
-    --home "/home/appuser" \
-    --shell "/bin/bash" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
     --uid "${UID}" \
     appuser
-
-RUN mkdir -p /home/appuser/uploads && \
-    chown -R appuser:appuser /home/appuser
 
 USER appuser
 
