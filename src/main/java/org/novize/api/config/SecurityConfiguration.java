@@ -76,7 +76,19 @@ public class SecurityConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                frontendDomain
+                frontendDomain,
+                "http://localhost",
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://127.0.0.1",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8080",
+                "http://host.docker.internal",
+                "http://host.docker.internal:3000",
+                "http://host.docker.internal:8080",
+                "http://192.168.178.21",
+                "http://192.168.178.21:3000",
+                "http://192.168.178.21:8080"
                 )
         );
 
