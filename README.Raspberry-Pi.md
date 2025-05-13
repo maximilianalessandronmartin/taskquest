@@ -95,6 +95,8 @@ If you encounter issues with the build or deployment, try the following:
    - Ensure that there are no conflicting environment variables in other .env files
    - The application is configured to load environment variables from multiple files in the following order: .env.raspberry-pi, .env.docker, .env, ../.env, .env.test
    - If you have multiple .env files with different credentials, make sure .env.raspberry-pi takes precedence
+   - Note that the docker-compose.arm64.yaml file now explicitly sets the database credentials to match those in init.sql, which should resolve most connection issues
+   - If you're still having issues, try removing the .env file or ensuring that it doesn't contain conflicting database credentials
 
 3. **Memory Issues**: Raspberry Pi has limited memory. The ARM64 Dockerfile includes memory settings for Java (-Xmx512m, -Xms256m) to limit memory usage. If you're still experiencing memory issues, consider increasing the swap space.
 

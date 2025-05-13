@@ -9,6 +9,12 @@ services:
       - "${PORT:-8080}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      # Explicitly set database credentials to match those in init.sql
+      MARIADB_USER: taskquest_user
+      MARIADB_PASSWORD: secure_password
+      MARIADB_HOST: db
+      MARIADB_PORT: 3306
+      MARIADB_DB: taskquest
     env_file:
       - .env.raspberry-pi
     volumes:
@@ -27,10 +33,11 @@ services:
     env_file:
       - .env.raspberry-pi
     environment:
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
-      MARIADB_DB: ${MARIADB_DB}
-      MARIADB_USER: ${MARIADB_USER}
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      # Explicitly set database credentials to match those in init.sql
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DB: taskquest
+      MARIADB_USER: taskquest_user
+      MARIADB_PASSWORD: secure_password
 
     volumes:
       - db-data:/var/lib/mysql
@@ -39,7 +46,7 @@ services:
     networks:
       - taskquest-network
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "taskquest_user", "-p${MARIADB_PASSWORD}" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "taskquest_user", "-psecure_password" ]
       interval: 10s
       timeout: 5s
       retries: 5
