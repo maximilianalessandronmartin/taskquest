@@ -1,6 +1,7 @@
 package org.novize.api.config;
 
 import org.novize.api.auth.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,6 +27,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${frontend-domain}")
+    private String frontendDomain;
 
     public SecurityConfiguration(
             JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -72,13 +76,7 @@ public class SecurityConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-             
-                "http://localhost:8081",
-                "http://localhost:5173",
-                "http://localhost:8080",
-                "http://192.168.178.61:5173",
-                "http://192.168.178.61:8080",
-                "http://localhost:80"
+                frontendDomain
                 )
         );
 
