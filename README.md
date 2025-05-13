@@ -62,8 +62,20 @@ docker-compose up -d
 
 Für ARM64-Architekturen (z.B. Apple Silicon oder Raspberry Pi):
 
+Option 1: Erstellen Sie eine .env Datei mit den korrekten Variablen (empfohlen):
 ```
+# Kopieren Sie den Inhalt von .env.raspberry-pi in eine neue .env Datei
+cp .env.raspberry-pi .env
+# Oder unter Windows:
+# copy .env.raspberry-pi .env
+
+# Starten Sie die Anwendung mit dem ARM64-spezifischen Docker Compose File
 docker-compose -f docker-compose.arm64.yaml up -d
+```
+
+Option 2: Verwenden Sie die --env-file Flag, um die Umgebungsvariablen explizit anzugeben:
+```
+docker-compose -f docker-compose.arm64.yaml --env-file .env.raspberry-pi up -d
 ```
 
 Weitere Informationen finden Sie in den Dateien:
