@@ -10,7 +10,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     env_file:
-      - .env.docker
+      - .env.raspberry-pi
     volumes:
       - ${UPLOAD_DIR:-./uploads}:/app/uploads
     networks:
@@ -25,7 +25,12 @@ services:
   db:
     image: arm64v8/mariadb:10.6
     env_file:
-      - .env.docker
+      - .env.raspberry-pi
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DB: ${MARIADB_DB}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
 
     volumes:
       - db-data:/var/lib/mysql

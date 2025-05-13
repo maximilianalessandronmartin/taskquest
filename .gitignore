@@ -39,3 +39,4 @@ build/
 /.env.local
 /qodana.yaml
 /.env.docker
+/.env.raspberry-pi
