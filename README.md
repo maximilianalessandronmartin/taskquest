@@ -54,33 +54,21 @@ Zeiterfassung.
 
 ### Docker-Installation
 
-Die Anwendung kann auch mit Docker und Docker Compose ausgeführt werden:
+Die Anwendung kann mit Docker und Docker Compose ausgeführt werden. Wir verwenden ein einheitliches Docker Compose File mit Profilen für verschiedene Umgebungen:
 
 ```
-docker-compose up -d
+# Standard (x86_64)
+docker compose up -d
+
+# Docker (x86_64) mit explizitem Profil
+ENVIRONMENT=docker docker compose --profile docker up -d
+
+# Raspberry Pi (ARM64)
+ENVIRONMENT=raspberry-pi TARGETARCH=arm64 DB_IMAGE=arm64v8/mariadb:10.6 DOCKERFILE=Dockerfile.arm64 docker compose --profile raspberry-pi up -d
 ```
 
-Für ARM64-Architekturen (z.B. Apple Silicon oder Raspberry Pi):
-
-Option 1: Erstellen Sie eine .env Datei mit den korrekten Variablen (empfohlen):
-```
-# Kopieren Sie den Inhalt von .env.raspberry-pi in eine neue .env Datei
-cp .env.raspberry-pi .env
-# Oder unter Windows:
-# copy .env.raspberry-pi .env
-
-# Starten Sie die Anwendung mit dem ARM64-spezifischen Docker Compose File
-docker-compose -f docker-compose.arm64.yaml up -d
-```
-
-Option 2: Verwenden Sie die --env-file Flag, um die Umgebungsvariablen explizit anzugeben:
-```
-docker-compose -f docker-compose.arm64.yaml --env-file .env.raspberry-pi up -d
-```
-
-Weitere Informationen finden Sie in den Dateien:
-- `README.Docker.md` - Allgemeine Docker-Informationen
-- `README.Raspberry-Pi.md` - Spezifische Anweisungen für Raspberry Pi
+Weitere Informationen finden Sie in der Datei:
+- `README.unified.md` - Umfassende Dokumentation für alle Umgebungen
 
 ## API-Dokumentation
 
