@@ -87,12 +87,12 @@ public class SecurityConfiguration {
                 "http://host.docker.internal:3000",
                 "http://host.docker.internal:8080",
                 "http://192.168.178.21",
-                "http://192.168.178.21:3000",
+                "http://192.168.178.30:3000",
                 "http://192.168.178.21:8080"
                 )
         );
 
-        configuration.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
