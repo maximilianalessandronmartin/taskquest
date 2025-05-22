@@ -86,9 +86,8 @@ public class SecurityConfiguration {
                 "http://host.docker.internal",
                 "http://host.docker.internal:3000",
                 "http://host.docker.internal:8080",
-                "http://192.168.178.21",
-                "http://192.168.178.30:3000",
-                "http://192.168.178.21:8080"
+                "http://192.168.178.30",
+                "http://192.168.178.30:3000"
                 )
         );
 
