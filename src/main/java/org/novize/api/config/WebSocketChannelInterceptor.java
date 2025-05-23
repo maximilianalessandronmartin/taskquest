@@ -46,11 +46,13 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
 
                         if (username != null) {
                             userRepository.findByEmail(username).ifPresent(user -> {
+                                // WICHTIG: Nur den Benutzernamen als Principal verwenden
                                 accessor.setUser(new UsernamePasswordAuthenticationToken(
-                                        user, null, user.getAuthorities()
+                                        username, null, user.getAuthorities()
                                 ));
                                 logger.debug("User authenticated via WebSocket: {}", username);
                             });
+
                         }
                     }
                     break;
