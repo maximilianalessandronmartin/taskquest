@@ -1,5 +1,6 @@
 package org.novize.api.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
 import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
@@ -15,9 +16,11 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     }
 
 
+    @Value("${websocket.security.same-origin-disabled:false}")
+    private boolean sameOriginDisabled;
 
     @Override
     protected boolean sameOriginDisabled() {
-        return true; // Für Entwicklung, in Produktion auf false setzen
+        return sameOriginDisabled;
     }
 }

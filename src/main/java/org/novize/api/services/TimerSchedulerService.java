@@ -20,15 +20,13 @@ public class TimerSchedulerService {
 
     private static final Logger logger = Logger.getLogger(TimerSchedulerService.class.getName());
     // Toleranzbereich für Timer-Ablauf (z.B. 100 ms)
-    private static final long TIMER_COMPLETION_TOLERANCE = 100L;
+    private static final long TIMER_COMPLETION_TOLERANCE = 1000L;
     @Autowired
     private TaskRepository taskRepository;
 
     @Autowired
     private TimerNotificationService timerNotificationService;
 
-    @Autowired
-    private UserService userService;
 
 
     /**
@@ -77,18 +75,22 @@ public class TimerSchedulerService {
             // Nur aktualisieren, wenn Zeit vergangen ist
             if (millisElapsed > 0) {
                 long newRemainingTime = Math.max(0L, task.getRemainingTimeMillis() - millisElapsed);
-                task.setRemainingTimeMillis(newRemainingTime);
 
                 // Wichtig: Überprüfen, ob der Timer gerade abgelaufen ist (mit Toleranzbereich)
                 boolean justCompleted = (previousRemainingMillis > 0 &&
                         newRemainingTime <= TIMER_COMPLETION_TOLERANCE);
-
+                // Timer-Status aktualisieren
+                task.setRemainingTimeMillis(newRemainingTime);
 
                 // Timer automatisch stoppen, wenn Zeit abgelaufen ist
                 if (newRemainingTime <= TIMER_COMPLETION_TOLERANCE) {
                     // Als abgelaufen behandeln
                     task.setRemainingTimeMillis(0L);
                     task.setTimerActive(false);
+                    logger.info("Timer-Prüfung: Task ID=" + task.getId() +
+                            ", previousTime=" + previousRemainingMillis +
+                            ", newTime=" + newRemainingTime +
+                            ", justCompleted=" + justCompleted);
 
 
                     // Wenn der Timer gerade jetzt abgelaufen ist, Benachrichtigungen senden
